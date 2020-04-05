@@ -5,6 +5,8 @@
 #include "ylib.h"
 #include "upath.h"
 
+#include <cairo.h>
+
 class YImage;
 
 class YPixmap: public virtual refcounted {
@@ -51,6 +53,20 @@ private:
         fPixmap24()
     {
     }
+    YPixmap(cairo_surface_t* pixmap,
+            unsigned width, unsigned height,
+            unsigned depth, ref<YImage> image):
+        fWidth(width),
+        fHeight(height),
+        fDepth(depth),
+        fKPixmap(pixmap),
+        fKMask(NULL),
+        fKPicture(NULL),
+        fImage(image),
+        fPixmap32(),
+        fPixmap24()
+    {
+    }
     virtual ~YPixmap();
 
     friend class YImage;
@@ -61,8 +77,11 @@ private:
     unsigned fDepth;
 
     Pixmap fPixmap;
+    cairo_surface_t *fKPixmap;
     Pixmap fMask;
+    cairo_surface_t *fKMask;
     Picture fPicture;
+    cairo_surface_t *fKPicture;    
     ref<YImage> fImage;
     ref<YPixmap> fPixmap32;
     ref<YPixmap> fPixmap24;

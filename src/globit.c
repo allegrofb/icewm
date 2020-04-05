@@ -28,6 +28,7 @@
 #include <string.h>
 #include <unistd.h>
 #include "globit.h"
+#include <stdbool.h>
 
 /*
  * globit_best - return the best prefix for a pattern, or the sole match

@@ -178,3 +178,6 @@ RELEASE.txt
 
 man/*.html
 pod2htmd.tmp
+
+src/testresource
+.vscode/

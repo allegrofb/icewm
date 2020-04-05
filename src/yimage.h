@@ -34,11 +34,14 @@ public:
     virtual ref<YImage> subimage(int x, int y, unsigned w, unsigned h) = 0;
     virtual void save(upath filename) = 0;
 
+    virtual void *getPtr() { return NULL; }
+
 protected:
     YImage(unsigned width, unsigned height) { fWidth = width; fHeight = height; }
     virtual ~YImage() {}
 
     ref<YPixmap> createPixmap(Pixmap pixmap, Pixmap mask, unsigned w, unsigned h, unsigned depth);
+    ref<YPixmap> createPixmap(cairo_surface_t* pixmap, unsigned w, unsigned h, unsigned depth);
 
 private:
     unsigned fWidth;

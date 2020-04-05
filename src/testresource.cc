@@ -2007,7 +2007,7 @@ YWindow* YWMApp::splash(const char* splashFile) {
 
 
 
-
+#include "wpixmaps.h"
 
 #include <gtk/gtk.h>
 #include <assert.h>
@@ -2037,8 +2037,7 @@ GtkTreeModel * init_model(void) {
   list_store = gtk_list_store_new(NUM_COLS, 
       G_TYPE_STRING, GDK_TYPE_PIXBUF);
 
-  int i = 0;
-  for (i; i < 5; i++) {
+  for (int i = 0; i < 1; i++) {
     gtk_list_store_append(list_store, &iter);
     gtk_list_store_set(list_store, &iter, COL_DISPLAY_NAME, 
         "ubuntu", COL_PIXBUF, p1, -1);
@@ -2051,28 +2050,119 @@ GtkTreeModel * init_model(void) {
     gtk_list_store_append(list_store, &iter);
     gtk_list_store_set(list_store, &iter, COL_DISPLAY_NAME, 
         "inkscape", COL_PIXBUF, p4, -1);
-  } 
+  }
+
+  WPixRes::initPixmaps();
+
+  gtk_list_store_append(list_store, &iter);
+  gtk_list_store_set(list_store, &iter, COL_DISPLAY_NAME,
+                     "taskbarStartImage", COL_PIXBUF, (GdkPixbuf*)(taskbarStartImage->getPtr()), -1);
+
+  gtk_list_store_append(list_store, &iter);
+  gtk_list_store_set(list_store, &iter, COL_DISPLAY_NAME,
+                     "taskbarWindowsImage", COL_PIXBUF, (GdkPixbuf*)(taskbarWindowsImage->getPtr()), -1);
+
+  gtk_list_store_append(list_store, &iter);
+  gtk_list_store_set(list_store, &iter, COL_DISPLAY_NAME,
+                     "taskbarShowDesktopImage", COL_PIXBUF, (GdkPixbuf*)(taskbarShowDesktopImage->getPtr()), -1);
+
+  gtk_list_store_append(list_store, &iter);
+  gtk_list_store_set(list_store, &iter, COL_DISPLAY_NAME,
+                     "taskbarCollapseImage", COL_PIXBUF, (GdkPixbuf*)(taskbarCollapseImage->getPtr()), -1);
+
+  gtk_list_store_append(list_store, &iter);
+  gtk_list_store_set(list_store, &iter, COL_DISPLAY_NAME,
+                     "taskbarExpandImage", COL_PIXBUF, (GdkPixbuf*)(taskbarExpandImage->getPtr()), -1);
 
   return GTK_TREE_MODEL (list_store);
 }
 
+void iconView()
+{
+    GtkWidget *window;
+    GtkWidget *icon_view;
+    GtkWidget *sw;
+
+    window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+
+    gtk_window_set_title(GTK_WINDOW(window), "Icon View");
+    gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
+    gtk_container_set_border_width(GTK_CONTAINER(window), 10);
+    gtk_widget_set_size_request(window, 350, 330);
+
+    sw = gtk_scrolled_window_new(NULL, NULL);
+    gtk_container_add(GTK_CONTAINER(window), sw);
+    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw),
+                                   GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+    gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(sw),
+                                        GTK_SHADOW_IN);
+
+    icon_view = gtk_icon_view_new_with_model(init_model());
+    gtk_container_add(GTK_CONTAINER(sw), icon_view);
+
+    gtk_icon_view_set_text_column(GTK_ICON_VIEW(icon_view),
+                                  COL_DISPLAY_NAME);
+    gtk_icon_view_set_pixbuf_column(GTK_ICON_VIEW(icon_view), COL_PIXBUF);
+    gtk_icon_view_set_selection_mode(GTK_ICON_VIEW(icon_view),
+                                     GTK_SELECTION_MULTIPLE);
+
+    g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
+
+    gtk_widget_show_all(window);
+
+}
+
+#include "mycpu.h"
+
+void cb_changed(GtkRange *range, GtkWidget *cpu) {
+    
+   my_cpu_set_percent(MY_CPU(cpu), gtk_range_get_value(range));
+}
+
+void mycpu()
+{
+   GtkWidget *window;
+   GtkWidget *box;
+   GtkWidget *cpu;
+   GtkWidget *scale;
+
+   window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+   g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit ), NULL);
+
+   box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 50);
+   gtk_container_add(GTK_CONTAINER(window), box);
+
+   cpu = my_cpu_new();
+   gtk_box_pack_start(GTK_BOX(box), cpu, FALSE, FALSE, 0);
+
+   scale = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, 0, 100, 1);
+   gtk_scale_set_draw_value(GTK_SCALE(scale), True);
+//    gtk_range_set_inverted(GTK_RANGE(scale), TRUE);
+   gtk_box_pack_start(GTK_BOX(box), scale, FALSE, FALSE, 0);
+   
+   g_signal_connect(scale, "value-changed", G_CALLBACK(cb_changed), cpu);
+   
+   gtk_widget_show_all(window);
+
+}
+
 int main(int argc, char *argv[]) {
-
-
 
     YLocale locale;
     bool restart_wm(false);
     bool notify_parent(false);
-    const char* configFile(0);
-    const char* displayName(0);
-    const char* overrideTheme(0);
+    const char *configFile(0);
+    const char *displayName(0);
+    const char *overrideTheme(0);
 
-    for (char ** arg = argv + 1; arg < argv + argc; ++arg) {
-        if (**arg == '-') {
+    for (char **arg = argv + 1; arg < argv + argc; ++arg)
+    {
+        if (**arg == '-')
+        {
             char *value(0);
-            if (GetArgument(value, "c", "config", arg, argv+argc))
+            if (GetArgument(value, "c", "config", arg, argv + argc))
                 configFile = value;
-            else if (GetArgument(value, "t", "theme", arg, argv+argc))
+            else if (GetArgument(value, "t", "theme", arg, argv + argc))
                 overrideTheme = value;
             else if (is_switch(*arg, "p", "postpreferences"))
                 post_preferences = true;
@@ -2080,13 +2170,13 @@ int main(int argc, char *argv[]) {
                 show_extensions = true;
             else
 #ifdef DEBUG
-            if (is_long_switch(*arg, "debug"))
+                if (is_long_switch(*arg, "debug"))
                 debug = true;
             else if (is_long_switch(*arg, "debug-z"))
                 debug_z = true;
             else
 #endif
-            if (is_switch(*arg, "r", "restart"))
+                if (is_switch(*arg, "r", "restart"))
                 restart_wm = true;
             else if (is_long_switch(*arg, "replace"))
                 replace_wm = true;
@@ -2110,11 +2200,11 @@ int main(int argc, char *argv[]) {
                 loggingEvents = true;
             else if (is_switch(*arg, "a", "alpha"))
                 YXApplication::alphaBlending = true;
-            else if (GetArgument(value, "d", "display", arg, argv+argc))
+            else if (GetArgument(value, "d", "display", arg, argv + argc))
                 displayName = value;
-            else if (GetArgument(value, "s", "splash", arg, argv+argc))
+            else if (GetArgument(value, "s", "splash", arg, argv + argc))
                 splashFile = value;
-            else if (GetLongArgument(value, "trace", arg, argv+argc))
+            else if (GetLongArgument(value, "trace", arg, argv + argc))
                 YTrace::tracing(value);
             else
                 warn(_("Unrecognized option '%s'."), *arg);
@@ -2139,46 +2229,14 @@ int main(int argc, char *argv[]) {
     //             notify_parent, splashFile,
     //             configFile, overrideTheme);
 
+    gtk_init(&argc, &argv);
 
+    // iconView();
+    mycpu();
 
-  GtkWidget *window;
-  GtkWidget *icon_view;
-  GtkWidget *sw;
+    gtk_main();
 
-  gtk_init(&argc, &argv);
-
-  window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-
-  gtk_window_set_title(GTK_WINDOW (window), "Icon View");
-  gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
-  gtk_container_set_border_width(GTK_CONTAINER(window), 10);
-  gtk_widget_set_size_request(window, 350, 330);
-
-  sw = gtk_scrolled_window_new(NULL, NULL);
-  gtk_container_add(GTK_CONTAINER(window), sw);
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw),
-      GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-  gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(sw),
-      GTK_SHADOW_IN);
-
-  WPixRes::initPixmaps();
-
-  icon_view = gtk_icon_view_new_with_model(init_model());
-  gtk_container_add(GTK_CONTAINER(sw), icon_view);
-        
-  gtk_icon_view_set_text_column(GTK_ICON_VIEW(icon_view),
-      COL_DISPLAY_NAME);
-  gtk_icon_view_set_pixbuf_column(GTK_ICON_VIEW(icon_view), COL_PIXBUF);
-  gtk_icon_view_set_selection_mode(GTK_ICON_VIEW(icon_view), 
-      GTK_SELECTION_MULTIPLE);
-
-  g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
-
-  gtk_widget_show_all(window);
-        
-  gtk_main();
-        
-  return 0;
+    return 0;
 }
 
 

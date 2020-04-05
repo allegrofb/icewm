@@ -4,8 +4,7 @@
 ########    BEFORE PUSHING YOUR CHANGES!
 ########
 
-
-AM_CPPFLAGS = -include ../config.h
+AM_CPPFLAGS = $(CORE_CFLAGS) -include ../config.h 
 AM_CXXFLAGS = $(CORE_CFLAGS) $(XSM_CFLAGS) $(IMAGE_CFLAGS) $(AUDIO_CFLAGS) $(GIO_CFLAGS) -DEXEEXT=$(EXEEXT)
 
 EXTRA_DIST = \
@@ -44,6 +43,7 @@ bin_PROGRAMS = \
 	icewmbg
 
 noinst_PROGRAMS = \
+	testresource \
 	genpref
 
 if BUILD_TESTS
@@ -205,6 +205,115 @@ genpref_SOURCES = \
 	default.h \
 	genpref.cc
 genpref_LDADD = libice.la @LIBINTL@
+
+
+testresource_SOURCES = \
+	mycpu.c \
+	intl.h \
+	debug.h \
+	sysdep.h \
+	base.h \
+	bindkey.h \
+	themable.h \
+	default.h \
+	prefs.h \
+	obj.h \
+	yaction.h \
+	yinputline.h \
+	yactionbutton.h \
+	objmenu.h \
+	objbutton.h \
+	WinMgr.h \
+	ypoll.h \
+	ylib.h \
+	ymsgbox.cc \
+	ymsgbox.h \
+	ydialog.cc \
+	ydialog.h \
+	binascii.h \
+	yurl.cc \
+	yurl.h \
+	yrect.h \
+	wmsession.cc \
+	wmsession.h \
+	wmwinlist.cc \
+	wmwinlist.h \
+	wmtaskbar.cc \
+	wmtaskbar.h \
+	wmwinmenu.cc \
+	wmwinmenu.h \
+	wmdialog.cc \
+	wmdialog.h \
+	wmabout.cc \
+	wmabout.h \
+	wmswitch.cc \
+	wmswitch.h \
+	wmstatus.cc \
+	wmstatus.h \
+	wmoption.cc \
+	wmoption.h \
+	wmaction.h \
+	wmcontainer.cc \
+	wmcontainer.h \
+	wmclient.cc \
+	MwmUtil.h \
+	wmclient.h \
+	wmmgr.cc \
+	wmmgr.h \
+	workspaces.h \
+	appnames.h \
+	guievent.h \
+	testresource.cc \
+	wmapp.h \
+	wmframe.cc \
+	wmframe.h \
+	wmbutton.cc \
+	wmbutton.h \
+	wmminiicon.cc \
+	wmminiicon.h \
+	wmtitle.cc \
+	wmtitle.h \
+	movesize.cc \
+	ascii.h \
+	themes.cc \
+	themes.h \
+	decorate.cc \
+	browse.cc \
+	browse.h \
+	wmmenu.cc \
+	wmprog.cc \
+	wmprog.h \
+	atasks.cc \
+	atasks.h \
+	aworkspaces.cc \
+	aworkspaces.h \
+	amailbox.cc \
+	amailbox.h \
+	aclock.cc \
+	aclock.h \
+	acpustatus.cc \
+	acpustatus.h \
+	amemstatus.cc \
+	amemstatus.h \
+	applet.cc \
+	applet.h \
+	apppstatus.cc \
+	apppstatus.h \
+	aaddressbar.cc \
+	aaddressbar.h \
+	objbar.cc \
+	objbar.h \
+	aapm.cc \
+	aapm.h \
+	atray.cc \
+	atray.h \
+	ysmapp.cc \
+	ysmapp.h \
+	yxcontext.h \
+	yxtray.cc \
+	yxtray.h
+testresource_LDADD = libitk.la libice.la $(IMAGE_LIBS) $(XSM_LIBS) $(CORE_LIBS)
+
 
 icewm_SOURCES = \
 	intl.h \

@@ -6,6 +6,7 @@
 #include "yxapp.h"
 #include <stdlib.h>
 #include <gdk-pixbuf-xlib/gdk-pixbuf-xlib.h>
+#include <gdk/gdk.h>
 
 #define ATH 10  /* alpha threshold */
 
@@ -32,6 +33,8 @@ public:
     virtual ref<YImage> subimage(int x, int y, unsigned w, unsigned h);
     virtual void save(upath filename);
 
+    virtual void *getPtr() { return (void*)fPixbuf; }
+
 private:
     GdkPixbuf *fPixbuf;
 };
@@ -49,6 +52,7 @@ unsigned YImageGDK::depth() const {
 }
 
 ref<YImage> YImage::load(upath filename) {
+    TLOG(("YImage::load %s", filename.string().c_str()));  //hyjiang
     ref<YImage> image;
     GError *gerror = 0;
     GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file(filename.string(), &gerror);
@@ -59,6 +63,8 @@ ref<YImage> YImage::load(upath filename) {
                                  pixbuf));
         return image;
     }
+
+    TLOG(("YImage::load pixbuf is NULL"));  //hyjiang
 
     // support themes with indirect XPM images, like OnyX:
     const int lim = 64;
@@ -215,80 +221,95 @@ ref<YImage> YImage::createFromPixmapAndMaskScaled(Pixmap pix, Pixmap mask,
     return image;
 }
 
-ref<YPixmap> YImageGDK::renderToPixmap(unsigned depth, bool premult) {
-    Pixmap pixmap = None, mask = None;
+ref<YPixmap> YImageGDK::renderToPixmap(unsigned depth, bool premult) {  //hyjiang, depth = 24, premult = false
 
-    if (depth == 0) {
-        depth = xapp->depth();
-    }
-    if (depth == 32 || depth == 24) {
-        int width = int(this->width());
-        int height = int(this->height());
-        Visual* visual = xapp->visualForDepth(depth);
-        XImage* image = XCreateImage(xapp->display(), visual, depth,
-                                     ZPixmap, 0, NULL, width, height, 8, 0);
-        if (image)
-            image->data = (char *) calloc(image->bytes_per_line * height, 1);
-        XImage* imask = XCreateImage(xapp->display(), visual, 1,
-                                     XYPixmap, 0, NULL, width, height, 8, 0);
-        if (imask)
-            imask->data = (char *) calloc(imask->bytes_per_line * height, 1);
+    cairo_surface_t *surface = gdk_cairo_surface_create_from_pixbuf (this->fPixbuf, 0, NULL);
 
-        if (image && image->data && imask && imask->data) {
-            const bool alpha = gdk_pixbuf_get_has_alpha(fPixbuf);
-            const int nchans = gdk_pixbuf_get_n_channels(fPixbuf);
-            const int stride = gdk_pixbuf_get_rowstride(fPixbuf);
-            const guchar* pixels = gdk_pixbuf_get_pixels(fPixbuf);
+    return createPixmap(surface, width(), height(), depth);
 
-            for (int row = 0; row < height; row++) {
-                const guchar* rowpix = pixels + row * stride;
-                for (int col = 0; col < width; col++, rowpix += nchans) {
-                    guchar red = rowpix[0];
-                    guchar grn = rowpix[1];
-                    guchar blu = rowpix[2];
-                    guchar alp = alpha
-                               ? (rowpix[3] >= ATH ? rowpix[3] : 0x00)
-                               : 0xFF;
-                    if (premult) {
-                        red = (red * (alp + 1)) >> 8;
-                        grn = (grn * (alp + 1)) >> 8;
-                        blu = (blu * (alp + 1)) >> 8;
-                    }
-                    XPutPixel(image, col, row,
-                              (red << 16) |
-                              (grn << 8) |
-                              (blu << 0) |
-                              (alp << 24));
-                    bool bit = (alp >= ATH);
-                    XPutPixel(imask, col, row, bit);
-                }
-            }
 
-            pixmap = XCreatePixmap(xapp->display(), xapp->root(),
-                                   width, height, depth);
-            GC gc = XCreateGC(xapp->display(), pixmap, None, None);
-            XPutImage(xapp->display(), pixmap, gc, image,
-                      0, 0, 0, 0, width, height);
-            XFreeGC(xapp->display(), gc);
+    // Pixmap pixmap = None, mask = None;
 
-            mask = XCreatePixmap(xapp->display(), xapp->root(),
-                                 width, height, 1);
-            gc = XCreateGC(xapp->display(), mask, None, None);
-            XPutImage(xapp->display(), mask, gc, imask,
-                      0, 0, 0, 0, width, height);
-            XFreeGC(xapp->display(), gc);
+    // if (depth == 0) {
+    //     depth = xapp->depth();
+    // }
+    // if (depth == 32 || depth == 24) {
+    //     int width = int(this->width());
+    //     int height = int(this->height());
+    //     Visual* visual = xapp->visualForDepth(depth);
+    //     XImage* image = XCreateImage(xapp->display(), visual, depth,
+    //                                  ZPixmap, 0, NULL, width, height, 8, 0);
+    //     if (image)
+    //         image->data = (char *) calloc(image->bytes_per_line * height, 1);
+    //     XImage* imask = XCreateImage(xapp->display(), visual, 1,
+    //                                  XYPixmap, 0, NULL, width, height, 8, 0);
+    //     if (imask)
+    //         imask->data = (char *) calloc(imask->bytes_per_line * height, 1);
 
-            XDestroyImage(image);
-            XDestroyImage(imask);
-        }
-    }
-    else if (depth == unsigned(xlib_rgb_get_depth())) {
-        gdk_pixbuf_xlib_render_pixmap_and_mask(fPixbuf, &pixmap, &mask, ATH);
-        if (pixmap == None)
-            return null;
-    }
+    //     if (image && image->data && imask && imask->data) {
+    //         const bool alpha = gdk_pixbuf_get_has_alpha(fPixbuf);
+    //         const int nchans = gdk_pixbuf_get_n_channels(fPixbuf);
+    //         const int stride = gdk_pixbuf_get_rowstride(fPixbuf);
+    //         const guchar* pixels = gdk_pixbuf_get_pixels(fPixbuf);
 
-    return createPixmap(pixmap, mask, width(), height(), depth);
+    //         for (int row = 0; row < height; row++) {
+    //             const guchar* rowpix = pixels + row * stride;
+    //             for (int col = 0; col < width; col++, rowpix += nchans) {
+    //                 guchar red = rowpix[0];
+    //                 guchar grn = rowpix[1];
+    //                 guchar blu = rowpix[2];
+    //                 guchar alp = alpha
+    //                            ? (rowpix[3] >= ATH ? rowpix[3] : 0x00)
+    //                            : 0xFF;
+    //                 if (premult) {
+    //                     red = (red * (alp + 1)) >> 8;
+    //                     grn = (grn * (alp + 1)) >> 8;
+    //                     blu = (blu * (alp + 1)) >> 8;
+    //                 }
+    //                 XPutPixel(image, col, row,
+    //                           (red << 16) |
+    //                           (grn << 8) |
+    //                           (blu << 0) |
+    //                           (alp << 24));
+    //                 bool bit = (alp >= ATH);
+    //                 XPutPixel(imask, col, row, bit);
+    //             }
+    //         }
+
+    //         pixmap = XCreatePixmap(xapp->display(), xapp->root(),
+    //                                width, height, depth);
+    //         GC gc = XCreateGC(xapp->display(), pixmap, None, None);
+    //         XPutImage(xapp->display(), pixmap, gc, image,
+    //                   0, 0, 0, 0, width, height);
+    //         XFreeGC(xapp->display(), gc);
+
+    //         mask = XCreatePixmap(xapp->display(), xapp->root(),
+    //                              width, height, 1);
+    //         gc = XCreateGC(xapp->display(), mask, None, None);
+    //         XPutImage(xapp->display(), mask, gc, imask,
+    //                   0, 0, 0, 0, width, height);
+    //         XFreeGC(xapp->display(), gc);
+
+    //         XDestroyImage(image);
+    //         XDestroyImage(imask);
+    //     }
+    // }
+    // else if (depth == unsigned(xlib_rgb_get_depth())) {
+    //     gdk_pixbuf_xlib_render_pixmap_and_mask(fPixbuf, &pixmap, &mask, ATH);
+    //     if (pixmap == None)
+    //         return null;
+    // }
+
+    // return createPixmap(pixmap, mask, width(), height(), depth);
+}
+
+ref<YPixmap> YImage::createPixmap(cairo_surface_t* pixmap,
+                                  unsigned w, unsigned h, unsigned depth) {
+    ref<YPixmap> n;
+
+    if (pixmap)
+        n.init(new YPixmap(pixmap, w, h, depth, ref<YImage>(this)));
+    return n;
 }
 
 ref<YPixmap> YImage::createPixmap(Pixmap pixmap, Pixmap mask,

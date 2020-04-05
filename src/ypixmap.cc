@@ -190,6 +190,7 @@ ref<YPixmap> YPixmap::createFromPixmapAndMaskScaled(Pixmap pix, Pixmap mask,
 }
 
 ref<YPixmap> YPixmap::load(upath filename) {
+    TLOG(("YPixmap::load %s", filename.string().c_str()));  //hyjiang
     ref<YImage> image = YImage::load(filename);
     ref<YPixmap> pixmap;
     if (image != null) {

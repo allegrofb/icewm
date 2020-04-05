@@ -49,6 +49,11 @@ public:
     {
         // tlog("created YXImage %ux%ux%u\n", ximage->width, ximage->height, ximage->depth);
     }
+    YXImage(GdkPixbuf *ximage, bool bitmap = false) :
+        YImage(ximage->width, ximage->height), fKImage(ximage), fBitmap(bitmap)
+    {
+        MSG(("created YXImage %ux%ux\n", ximage->width, ximage->height));
+    }
     virtual ~YXImage() {
         if (fImage != 0)
             XDestroyImage(fImage);
@@ -124,6 +129,7 @@ public:
 
 private:
     XImage *fImage;
+    GdkPixbuf *fKImage;
     bool fBitmap;
 };
 
@@ -253,46 +259,65 @@ ref<YImage> YXImage::loadxpm(upath filename)
 
 ref<YImage> YXImage::loadxpm2(upath filename, int& status)
 {
+    status = XpmSuccess;
     ref<YImage> image;
-    XImage *xdraw = 0, *xmask = 0;
-    XpmAttributes xa;
+    GError *gerror;
+    GdkPixbuf *pixbuf = NULL;
 
-    xa.visual = xapp->visual();
-    xa.colormap = xapp->colormap();
-    xa.depth = xapp->depth();
-    xa.valuemask = XpmVisual|XpmColormap|XpmDepth;
-
-    status = XpmReadFileToImage(xapp->display(), filename.string(), &xdraw, &xmask, &xa);
-
-    if (status == XpmSuccess) {
-        XpmFreeAttributes(&xa);
-        if (xmask == 0)
-            image.init(new YXImage(xdraw));
-        else {
-            XImage *ximage;
-            unsigned w = xdraw->width;
-            unsigned h = xdraw->height;
-
-            ximage = createImage(w, h, 32U);
-            if (ximage) {
-                for (unsigned j = 0; j < h; j++) {
-                    for (unsigned i = 0; i < w; i++) {
-                        if (XGetPixel(xmask, i, j))
-                            XPutPixel(ximage, i, j, XGetPixel(xdraw, i, j) | 0xFF000000);
-                        else
-                            XPutPixel(ximage, i, j, XGetPixel(xdraw, i, j) & 0x00FFFFFF);
-                    }
-                }
-                image.init(new YXImage(ximage));
-                ximage = 0; // consumed above
-            }
-            if (ximage)
-                XDestroyImage(ximage);
-            XDestroyImage(xdraw);
-            XDestroyImage(xmask);
-        }
+    pixbuf = gdk_pixbuf_new_from_file(filename.string(), &gerror);
+    if (!pixbuf)
+    {
+        printf("error message: %s\n", gerror->message);
+        status = XpmFileInvalid;
+        return image;
     }
+
+    MSG(("loadxpm2 %s\n", filename.string()));
+
+    image.init(new YXImage(pixbuf));
     return image;
+
+
+    // ref<YImage> image;
+    // XImage *xdraw = 0, *xmask = 0;
+    // XpmAttributes xa;
+
+    // xa.visual = xapp->visual();
+    // xa.colormap = xapp->colormap();
+    // xa.depth = xapp->depth();
+    // xa.valuemask = XpmVisual|XpmColormap|XpmDepth;
+
+    // status = XpmReadFileToImage(xapp->display(), filename.string(), &xdraw, &xmask, &xa);
+
+    // if (status == XpmSuccess) {
+    //     XpmFreeAttributes(&xa);
+    //     if (xmask == 0)
+    //         image.init(new YXImage(xdraw));
+    //     else {
+    //         XImage *ximage;
+    //         unsigned w = xdraw->width;
+    //         unsigned h = xdraw->height;
+
+    //         ximage = createImage(w, h, 32U);
+    //         if (ximage) {
+    //             for (unsigned j = 0; j < h; j++) {
+    //                 for (unsigned i = 0; i < w; i++) {
+    //                     if (XGetPixel(xmask, i, j))
+    //                         XPutPixel(ximage, i, j, XGetPixel(xdraw, i, j) | 0xFF000000);
+    //                     else
+    //                         XPutPixel(ximage, i, j, XGetPixel(xdraw, i, j) & 0x00FFFFFF);
+    //                 }
+    //             }
+    //             image.init(new YXImage(ximage));
+    //             ximage = 0; // consumed above
+    //         }
+    //         if (ximage)
+    //             XDestroyImage(ximage);
+    //         XDestroyImage(xdraw);
+    //         XDestroyImage(xmask);
+    //     }
+    // }
+    // return image;
 }
 
 #ifdef CONFIG_LIBPNG

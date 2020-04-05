@@ -195,7 +195,7 @@ AC_RUN_IFELSE([AC_LANG_PROGRAM([[#include <string.h>]],[[
               ])
 
 
-PKG_CHECK_MODULES([CORE],[fontconfig xrender xcomposite xdamage xfixes xext x11])
+PKG_CHECK_MODULES([CORE],[fontconfig xrender xcomposite xdamage xfixes xext x11 gtk+-3.0])
 AC_SUBST([CORE_CFLAGS])
 AC_SUBST([CORE_LIBS])
 
