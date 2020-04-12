@@ -208,6 +208,7 @@ genpref_LDADD = libice.la @LIBINTL@
 
 
 testresource_SOURCES = \
+	widget.c \
 	mycpu.c \
 	intl.h \
 	debug.h \

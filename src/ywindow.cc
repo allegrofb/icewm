@@ -20,6 +20,8 @@
 #include "yxcontext.h"
 #include <typeinfo>
 
+#include "widget.h"
+
 #ifdef XINERAMA
 #include <X11/extensions/Xinerama.h>
 #endif
@@ -148,6 +150,23 @@ YWindow::YWindow(YWindow *parent, Window win, int depth,
     insertWindow();
 }
 
+
+YWindow::YWindow(int widget):
+    fFocusedWindow(0),
+    fWidget(0), flags(0), fStyle(0), fX(0), fY(0), fWidth(1), fHeight(1),
+    fPointer(), unmapCount(0),
+    fGraphics(0),
+    fEventMask(KeyPressMask|KeyReleaseMask|FocusChangeMask|
+               LeaveWindowMask|EnterWindowMask),
+    fWinGravity(NorthWestGravity), fBitGravity(ForgetGravity),
+    fEnabled(true), fToplevel(false),
+    fDoubleBuffer(doubleBuffer),
+    accel(0),
+    fDND(false), XdndDragSource(None), XdndDropTarget(None)
+{
+    createWidget();
+}
+
 YWindow::~YWindow() {
     if (fAutoScroll &&
         fAutoScroll->isScrolling() &&
@@ -173,6 +192,7 @@ YWindow::~YWindow() {
     }
     if (flags & wfCreated)
         destroy();
+        destroyWidget();
 }
 
 Colormap YWindow::colormap() {
@@ -446,6 +466,76 @@ Window YWindow::create() {
     return fHandle;
 }
 
+
+GtkWidget* YWindow::createWidget() {
+    if (flags & wfCreated) return fWidget;
+
+    if (fWidget == None) {
+        
+        unsigned zw = width();
+        unsigned zh = height();
+        if (zw == 0 || zh == 0) {
+            zw = 1;
+            zh = 1;
+            flags |= wfNullSize;
+        }
+
+        fWidget = my_widget_new();
+
+        // fHandle = XCreateWindow(xapp->display(),
+        //                         parent()->handle(),
+        //                         x(), y(), zw, zh,
+        //                         0,
+        //                         output ? fDepth : CopyFromParent,
+        //                         output ? InputOutput : InputOnly,
+        //                         output ? fVisual : CopyFromParent,
+        //                         attrmask,
+        //                         &attributes);
+
+        // XWindowAttributes wa;
+        // if (XGetWindowAttributes(xapp->display(), fHandle, &wa) == False) {
+        //     flags |= (wfCreated | wfDestroyed);
+        //     return None;
+        // }
+        // fDepth = unsigned(wa.depth);
+        // fVisual = wa.visual;
+        // if (parent() == desktop &&
+        //     !(flags & (wsManager | wsOverrideRedirect)))
+        //     XSetWMProtocols(xapp->display(), fHandle, &_XA_WM_DELETE_WINDOW, 1);
+
+        // if ((flags & wfVisible) && !(flags & wfNullSize))
+        //     XMapWindow(xapp->display(), fHandle);
+    } else {
+        // readAttributes();
+
+        // fEventMask = 0;
+
+        // if ((fStyle & wsDesktopAware) || (fStyle & wsManager) ||
+        //     (fHandle != xapp->root()))
+        //     fEventMask |=
+        //         StructureNotifyMask |
+        //         ColormapChangeMask |
+        //         PropertyChangeMask;
+
+        // if (fStyle & wsManager) {
+        //     fEventMask |=
+        //         FocusChangeMask |
+        //         SubstructureRedirectMask | SubstructureNotifyMask |
+        //         ButtonPressMask | ButtonReleaseMask | ButtonMotionMask;
+
+
+        //     if (!grabRootWindow &&
+        //         fHandle == xapp->root())
+        //         fEventMask &= ~(ButtonPressMask | ButtonReleaseMask | ButtonMotionMask);
+        // }
+
+        // XSelectInput(xapp->display(), fHandle, fEventMask);
+    }
+    // windowContext.save(fHandle, this);
+    flags |= wfCreated;
+    return fWidget;
+}
+
 void YWindow::destroy() {
     if (flags & wfCreated) {
         if (!(flags & wfDestroyed)) {
@@ -463,6 +553,18 @@ void YWindow::destroy() {
         flags &= unsigned(~wfCreated);
     }
 }
+
+void YWindow::destroyWidget() {
+    if (flags & wfCreated) {
+        if (!(flags & wfDestroyed)) {
+            setDestroyed();
+            gtk_widget_destroy(fWidget);
+        }
+        fWidget = None;
+        flags &= unsigned(~wfCreated);
+    }
+}
+
 void YWindow::removeWindow() {
     if (fParentWindow) {
         fParentWindow->remove(this);
@@ -524,7 +626,8 @@ bool YWindow::testDestroyed() {
 }
 
 void YWindow::setVisible(bool enable) {
-    return enable ? show() : hide();
+    // return enable ? show() : hide();     //hyjiang
+    if(enable) flags |= wfVisible; else flags &= unsigned(~wfVisible);
 }
 
 void YWindow::setWinGravity(int gravity) {
@@ -1116,6 +1219,11 @@ void YWindow::setBackground(unsigned long pixel) {
 
 void YWindow::setBackgroundPixmap(Pixmap pixmap) {
     XSetWindowBackgroundPixmap(xapp->display(), handle(), pixmap);
+}
+
+void YWindow::setBackgroundKPixmap(cairo_surface_t* pixmap) {
+    // XSetWindowBackgroundPixmap(xapp->display(), handle(), pixmap);
+
 }
 
 void YWindow::setBackgroundPixmap(ref<YPixmap> pixmap) {
@@ -1922,7 +2030,7 @@ void YWindow::scrollWindow(int dx, int dy) {
 }
 
 void YWindow::clearWindow() {
-    XClearWindow(xapp->display(), handle());
+    // XClearWindow(xapp->display(), handle());  //hyjiang
 }
 
 void YWindow::clearArea(int x, int y, unsigned w, unsigned h, bool exposures) {
@@ -1931,6 +2039,15 @@ void YWindow::clearArea(int x, int y, unsigned w, unsigned h, bool exposures) {
 
 Pixmap YWindow::createPixmap() {
     return XCreatePixmap(xapp->display(), xapp->root(), fWidth, fHeight, fDepth);
+}
+
+cairo_surface_t* YWindow::createKPixmap() {
+    fWidth = 20;                                     //hyjiang
+    fHeight = 20;
+    MSG(("YWindow::createKPixmap %d %d\n",
+            fWidth, fHeight));
+
+    return cairo_image_surface_create(CAIRO_FORMAT_ARGB32, fWidth, fHeight); 
 }
 
 XRenderPictFormat* YWindow::format() {

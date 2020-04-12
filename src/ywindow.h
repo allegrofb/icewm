@@ -7,6 +7,9 @@
 #include "ylist.h"
 #include "yrect.h"
 
+#include <gtk/gtk.h>
+#include <cairo.h>
+
 class YPopupWindow;
 class YToolTip;
 class YTimer;
@@ -77,6 +80,7 @@ public:
     void setBackground(unsigned long pixel);
     void setBackgroundPixmap(ref<YPixmap> pixmap);
     void setBackgroundPixmap(Pixmap pixmap);
+    void setBackgroundKPixmap(cairo_surface_t* pixmap);
     void setParentRelative();
     virtual void configure(const YRect &r);
     virtual void configure(const YRect2& r2);
@@ -239,6 +243,7 @@ public:
     void clearWindow();
     void clearArea(int x, int y, unsigned w, unsigned h, bool expos = false);
     Pixmap createPixmap();
+    cairo_surface_t* createKPixmap();
     XRenderPictFormat* format();
     Picture createPicture();
 
@@ -256,6 +261,15 @@ public:
     static unsigned long getLastEnterNotifySerial();
 
     void unmanageWindow() { removeWindow(); }
+
+public :
+    YWindow(int widget);
+    GtkWidget *getWidget() { return fWidget; }
+
+private:
+    GtkWidget *fWidget;
+    GtkWidget *createWidget();
+    void destroyWidget();
 
 private:
     enum WindowFlags {

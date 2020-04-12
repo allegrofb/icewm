@@ -15,6 +15,8 @@
 
 #include "ycolor.h"
 
+#include <cairo.h>
+
 class YWindow;
 
 enum YDirection {
@@ -94,6 +96,7 @@ public:
     Graphics(ref<YPixmap> pixmap, int x_org, int y_org);
     Graphics(Drawable drawable, unsigned w, unsigned h, unsigned depth, unsigned long vmask, XGCValues * gcv);
     Graphics(Drawable drawable, unsigned w, unsigned h, unsigned depth);
+    Graphics(cairo_surface_t* drawable, unsigned w, unsigned h, unsigned depth);
     ~Graphics();
 
     void clear();
@@ -180,7 +183,9 @@ public:
     void repVert(ref<YPixmap> p, int x, int y, unsigned h);
 
     Drawable drawable() const { return fDrawable; }
+    cairo_surface_t* k_drawable() const { return fKDrawable; }
     GC handleX() const { return gc; }
+    cairo_t* k_handleX() const { return k_gc; }
 #ifdef CONFIG_XFREETYPE
     struct _XftDraw* handleXft();
 #endif
@@ -210,6 +215,11 @@ private:
     Picture fPicture;
     int xOrigin, yOrigin;
     unsigned rWidth, rHeight, rDepth;
+
+private:
+    cairo_surface_t* fKDrawable;
+    cairo_t* k_gc;
+
 };
 
 /******************************************************************************/

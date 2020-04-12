@@ -25,6 +25,7 @@ public:
     void replicate(bool horiz, bool copyMask);
 
     Pixmap pixmap() const { return fPixmap; }
+    cairo_surface_t* k_pixmap() const { return fKPixmap; }
     Pixmap mask() const { return fMask; }
     unsigned width() const { return fWidth; }
     unsigned height() const { return fHeight; }

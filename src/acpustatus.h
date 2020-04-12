@@ -56,11 +56,16 @@ private:
     YColorName tempColor;
 
     bool picture();
+    bool k_picture();
     void fill(Graphics& g);
     void draw(Graphics& g);
     void temperature(Graphics& g);
 
     static ref<YFont> tempFont;
+
+public:
+    friend gboolean time_handler(CPUStatus *cpu) ;
+
 };
 
 class CPUStatusControl : private CPUStatusHandler, public YActionListener

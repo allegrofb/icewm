@@ -16,6 +16,7 @@ class Picturer {
 public:
     virtual ~Picturer() = 0;
     virtual bool picture() = 0;
+    virtual bool k_picture() {}
 };
 
 class IApplet : public YWindow {
@@ -33,6 +34,10 @@ protected:
     Drawable getPixmap();
     bool hasPixmap() const { return fPixmap != None; }
 
+    void freeKPixmap();
+    cairo_surface_t* getKPixmap();
+    bool hasKPixmap() const { return fKPixmap != None; }
+
     bool isVisible;
 
 private:
@@ -41,6 +46,7 @@ private:
 
     Picturer* fPicturer;
     Drawable fPixmap;
+    cairo_surface_t* fKPixmap;
 };
 
 extern YColorName taskBarBg;

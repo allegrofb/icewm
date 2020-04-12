@@ -76,6 +76,12 @@ extern ref<YPixmap> taskbackPixmap;
 
 ref<YFont> CPUStatus::tempFont;
 
+
+gboolean time_handler(CPUStatus *cpu) 
+{
+    return cpu->handleTimer(cpu->fUpdateTimer._ptr());
+}
+
 CPUStatus::CPUStatus(YWindow *aParent, CPUStatusHandler *aHandler, int cpuid) :
     IApplet(this, aParent),
     fCpuID(cpuid),
@@ -91,6 +97,7 @@ CPUStatus::CPUStatus(YWindow *aParent, CPUStatusHandler *aHandler, int cpuid) :
     memset(last_cpu, 0, sizeof(last_cpu));
 
     fUpdateTimer->setTimer(taskBarCPUDelay, this, true);
+    g_timeout_add(taskBarCPUDelay, (GSourceFunc) time_handler, (gpointer) this);
 
     tempColor = &clrCpuTemp;
 
@@ -114,6 +121,9 @@ CPUStatus::CPUStatus(YWindow *aParent, CPUStatusHandler *aHandler, int cpuid) :
     char buf[99];
     snprintf(buf, 99, "CPU%d", cpuid);
     setTitle(buf);
+
+    isVisible = true;   //hyjiang, default set true
+    setVisible(true); //hyjiang, default show
 }
 
 CPUStatus::~CPUStatus() {
@@ -122,6 +132,27 @@ CPUStatus::~CPUStatus() {
 void CPUStatus::paint(Graphics &g, const YRect& r) {
     IApplet::paint(g, r);
     temperature(g);
+}
+
+bool CPUStatus::k_picture() {
+    MSG((_("CPUStatus::k_picture %d, %d %d %d\n"),
+        (hasKPixmap() == false), width(), height(), depth()));
+
+    bool create = (hasKPixmap() == false);
+
+    Graphics G(getKPixmap(), width(), height(), depth());
+
+    MSG((_("CPUStatus::k_picture %d\n"),
+        2));
+
+    if (create)
+        fill(G);
+
+    MSG((_("CPUStatus::k_picture 3, %d %d\n"),
+        statusUpdateCount, unchanged < taskBarCPUSamples));
+
+    return (statusUpdateCount && unchanged < taskBarCPUSamples)
+         ? draw(G), true : (create || ShowAcpiTempInGraph);
 }
 
 bool CPUStatus::picture() {
@@ -137,10 +168,15 @@ bool CPUStatus::picture() {
 }
 
 void CPUStatus::fill(Graphics& g) {
+
     if (color[IWM_IDLE]) {
+    MSG(("CPUStatus::fill 1\n"));
         g.setColor(color[IWM_IDLE]);
+    MSG(("CPUStatus::fill 1.1\n"));
         g.fillRect(0, 0, width(), height());
+    MSG(("CPUStatus::fill 1.2\n"));
     } else {
+    MSG(("CPUStatus::fill 2\n"));
         ref<YImage> gradient(getGradient());
 
         if (gradient != null)
@@ -154,13 +190,21 @@ void CPUStatus::fill(Graphics& g) {
 }
 
 void CPUStatus::draw(Graphics& g) {
+
+    MSG((_("CPUStatus::draw %d\n"),
+        1));
+
     int h = height();
     int first = max(0, taskBarCPUSamples - statusUpdateCount);
     if (0 < first && first < taskBarCPUSamples)
         g.copyArea(taskBarCPUSamples - first, 0, first, h, 0, 0);
+
     const int limit = (statusUpdateCount <= (1 + unchanged) / 2)
                     ? taskBarCPUSamples - statusUpdateCount : taskBarCPUSamples;
     statusUpdateCount = 0;
+
+    MSG((_("CPUStatus::draw first %d, limit %d\n"),
+        first, limit));
 
     for (int i = first; i < limit; i++) {
         unsigned long long
@@ -241,6 +285,10 @@ void CPUStatus::draw(Graphics& g) {
                 softirqbar, stealbar, h));
         }
         if (y > 0) {
+            
+            MSG((_("CPUStatus::draw %d\n"),
+                99));
+
             if (color[IWM_IDLE]) {
                 g.setColor(color[IWM_IDLE]);
                 g.drawLine(i, 0, i, y);

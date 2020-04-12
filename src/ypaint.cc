@@ -81,6 +81,16 @@ Graphics::Graphics(Drawable drawable, unsigned w, unsigned h, unsigned depth,
 #endif
 }
 
+Graphics::Graphics(cairo_surface_t* drawable, unsigned w, unsigned h, unsigned depth):
+    fKDrawable(drawable),
+    fColor(), fFont(null),
+    fPicture(None),
+    xOrigin(0), yOrigin(0),
+    rWidth(w), rHeight(h), rDepth(depth)
+{
+    k_gc = cairo_create(drawable);
+}
+
 Graphics::Graphics(Drawable drawable, unsigned w, unsigned h, unsigned depth):
     fDrawable(drawable),
     fColor(), fFont(null),
@@ -96,17 +106,17 @@ Graphics::Graphics(Drawable drawable, unsigned w, unsigned h, unsigned depth):
 }
 
 Graphics::~Graphics() {
-    XFreeGC(display(), gc);
+    // XFreeGC(display(), gc);
     gc = None;
 
     if (fPicture) {
-        XRenderFreePicture(display(), fPicture);
+        // XRenderFreePicture(display(), fPicture);
         fPicture = None;
     }
 
 #ifdef CONFIG_XFREETYPE
     if (fXftDraw) {
-        XftDrawDestroy(fXftDraw);
+        // XftDrawDestroy(fXftDraw);
         fXftDraw = 0;
     }
 #endif
@@ -115,9 +125,9 @@ Graphics::~Graphics() {
 #ifdef CONFIG_XFREETYPE
 XftDraw* Graphics::handleXft() {
     if (fXftDraw == nullptr) {
-        fXftDraw = XftDrawCreate(display(), drawable(),
-                                 xapp->visualForDepth(rdepth()),
-                                 xapp->colormapForDepth(rdepth()));
+        // fXftDraw = XftDrawCreate(display(), drawable(),
+        //                          xapp->visualForDepth(rdepth()),
+        //                          xapp->colormapForDepth(rdepth()));
     }
     return fXftDraw;
 }
@@ -125,15 +135,15 @@ XftDraw* Graphics::handleXft() {
 
 Picture Graphics::picture() {
     if (fPicture == None) {
-        XRenderPictFormat* format = xapp->formatForDepth(rDepth);
-        if (format) {
-            XRenderPictureAttributes attr;
-            unsigned long mask = None;
-            attr.component_alpha = (rDepth == 32);
-            mask |= CPComponentAlpha;
-            fPicture = XRenderCreatePicture(display(), fDrawable,
-                                            format, mask, &attr);
-        }
+        // XRenderPictFormat* format = xapp->formatForDepth(rDepth);
+        // if (format) {
+        //     XRenderPictureAttributes attr;
+        //     unsigned long mask = None;
+        //     attr.component_alpha = (rDepth == 32);
+        //     mask |= CPComponentAlpha;
+        //     fPicture = XRenderCreatePicture(display(), fDrawable,
+        //                                     format, mask, &attr);
+        // }
     }
     return fPicture;
 }
@@ -142,23 +152,27 @@ Picture Graphics::picture() {
 
 void Graphics::clear()
 {
-    clearArea(0, 0, rwidth(), rheight());
+    // clearArea(0, 0, rwidth(), rheight());
 }
 
 void Graphics::clearArea(int x, int y, unsigned w, unsigned h)
 {
-    setFunction(GXclear);
-    XFillRectangle(display(), drawable(), gc, x, y, w, h);
-    setFunction(GXcopy);
+    // setFunction(GXclear);
+    // XFillRectangle(display(), drawable(), gc, x, y, w, h);
+    // setFunction(GXcopy);
 }
 
 void Graphics::copyArea(const int x, const int y,
                         const unsigned width, const unsigned height,
                         const int dx, const int dy)
 {
-    XCopyArea(display(), drawable(), drawable(), gc,
-              x - xOrigin, y - yOrigin, width, height,
-              dx - xOrigin, dy - yOrigin);
+    cairo_surface_t* src = 
+    cairo_surface_create_for_rectangle(k_drawable(), x - xOrigin, y - yOrigin, width, height);
+    cairo_set_source_surface(k_gc, src, dx - xOrigin, dy - yOrigin);
+    cairo_paint(k_gc);
+    // XCopyArea(display(), drawable(), drawable(), gc,
+    //           x - xOrigin, y - yOrigin, width, height,
+    //           dx - xOrigin, dy - yOrigin);
 }
 
 void Graphics::copyDrawable(Drawable const d,
@@ -169,9 +183,9 @@ void Graphics::copyDrawable(Drawable const d,
     if (d == None)
         return;
 
-    XCopyArea(display(), d, drawable(), gc,
-              x, y, w, h,
-              dx - xOrigin, dy - yOrigin);
+    // XCopyArea(display(), d, drawable(), gc,
+    //           x, y, w, h,
+    //           dx - xOrigin, dy - yOrigin);
 }
 
 void Graphics::copyImage(ref<YImage> image, int x, int y) {
@@ -189,67 +203,73 @@ void Graphics::copyPixmap(ref<YPixmap> p,
                           const unsigned w, const unsigned h,
                           const int dx, const int dy)
 {
-    if (p == null)
-        return;
-    Pixmap pixmap = p->pixmap(rdepth());
-    if (pixmap) {
-        copyDrawable(pixmap, x, y, w, h, dx, dy);
-        return;
-    }
+//     if (p == null)
+//         return;
+//     Pixmap pixmap = p->pixmap(rdepth());
+//     if (pixmap) {
+//         copyDrawable(pixmap, x, y, w, h, dx, dy);
+//         return;
+//     }
 
-    TLOG(("%s: attempt to copy pixmap 0x%lx of depth %d using gc of depth %d",
-          __func__, pixmap, p->depth(), rdepth()));
-#if defined(DEBUG) || defined(PRECON)
-    if (xapp->synchronized())
-        show_backtrace();
-#endif
+//     TLOG(("%s: attempt to copy pixmap 0x%lx of depth %d using gc of depth %d",
+//           __func__, pixmap, p->depth(), rdepth()));
+// #if defined(DEBUG) || defined(PRECON)
+//     if (xapp->synchronized())
+//         show_backtrace();
+// #endif
 }
 
 /******************************************************************************/
 
 void Graphics::drawPoint(int x, int y) {
-    XDrawPoint(display(), drawable(), gc,
-               x - xOrigin, y - yOrigin);
+    // XDrawPoint(display(), drawable(), gc,
+    //            x - xOrigin, y - yOrigin);
 }
 
 void Graphics::drawLine(int x1, int y1, int x2, int y2) {
-    XDrawLine(display(), drawable(), gc,
-              x1 - xOrigin, y1 - yOrigin,
+    cairo_move_to(k_gc,
+              x1 - xOrigin, y1 - yOrigin);
+    cairo_line_to(k_gc,
               x2 - xOrigin, y2 - yOrigin);
+    cairo_stroke(k_gc);
+    
+    // XDrawLine(display(), drawable(), gc,
+    //           x1 - xOrigin, y1 - yOrigin,
+    //           x2 - xOrigin, y2 - yOrigin);
 }
 
 void Graphics::drawLines(XPoint *points, int n, int mode) {
-    int n1 = (mode == CoordModeOrigin) ? n : 1;
-    for (int i = 0; i < n1; i++) {
-        points[i].x -= xOrigin;
-        points[i].y -= yOrigin;
-    }
-    XDrawLines(display(), drawable(), gc, points, n, mode);
-    for (int i = 0; i < n1; i++) {
-        points[i].x += xOrigin;
-        points[i].y += yOrigin;
-    }
+    // int n1 = (mode == CoordModeOrigin) ? n : 1;
+    // for (int i = 0; i < n1; i++) {
+    //     points[i].x -= xOrigin;
+    //     points[i].y -= yOrigin;
+    // }
+    // XDrawLines(display(), drawable(), gc, points, n, mode);
+    // for (int i = 0; i < n1; i++) {
+    //     points[i].x += xOrigin;
+    //     points[i].y += yOrigin;
+    // }
 }
 
 void Graphics::drawSegments(XSegment *segments, int n) {
-    for (int i = 0; i < n; i++) {
-        segments[i].x1 -= xOrigin;
-        segments[i].y1 -= yOrigin;
-        segments[i].x2 -= xOrigin;
-        segments[i].y2 -= yOrigin;
-    }
-    XDrawSegments(display(), drawable(), gc, segments, n);
-    for (int i = 0; i < n; i++) {
-        segments[i].x1 += xOrigin;
-        segments[i].y1 += yOrigin;
-        segments[i].x2 += xOrigin;
-        segments[i].y2 += yOrigin;
-    }
+    // for (int i = 0; i < n; i++) {
+    //     segments[i].x1 -= xOrigin;
+    //     segments[i].y1 -= yOrigin;
+    //     segments[i].x2 -= xOrigin;
+    //     segments[i].y2 -= yOrigin;
+    // }
+    // XDrawSegments(display(), drawable(), gc, segments, n);
+    // for (int i = 0; i < n; i++) {
+    //     segments[i].x1 += xOrigin;
+    //     segments[i].y1 += yOrigin;
+    //     segments[i].x2 += xOrigin;
+    //     segments[i].y2 += yOrigin;
+    // }
 }
 
 void Graphics::drawRect(int x, int y, unsigned width, unsigned height) {
-    XDrawRectangle(display(), drawable(), gc,
-                   x - xOrigin, y - yOrigin, width, height);
+    // XDrawRectangle(display(), drawable(), gc,
+    //                x - xOrigin, y - yOrigin, width, height);
 }
 
 void Graphics::drawRects(XRectangle *rects, unsigned n) {
@@ -257,7 +277,7 @@ void Graphics::drawRects(XRectangle *rects, unsigned n) {
         rects[i].x -= xOrigin;
         rects[i].y -= yOrigin;
     }
-    XDrawRectangles(display(), drawable(), gc, rects, int(n));
+    // XDrawRectangles(display(), drawable(), gc, rects, int(n));
     for (unsigned i = 0; i < n; i++) {
         rects[i].x += xOrigin;
         rects[i].y += yOrigin;
@@ -265,29 +285,31 @@ void Graphics::drawRects(XRectangle *rects, unsigned n) {
 }
 
 void Graphics::drawArc(int x, int y, unsigned width, unsigned height, int a1, int a2) {
-    XDrawArc(display(), drawable(), gc,
-             x - xOrigin, y - yOrigin, width, height, a1, a2);
+    // XDrawArc(display(), drawable(), gc,
+    //          x - xOrigin, y - yOrigin, width, height, a1, a2);
 }
 
 /******************************************************************************/
 
 void Graphics::drawChars(const ustring &s, int x, int y) {
-    if (fFont != null && s != null) {
-        cstring cs(s);
-        fFont->drawGlyphs(*this, x, y, cs.c_str(), cs.c_str_len());
-    }
+    // if (fFont != null && s != null) {
+    //     cstring cs(s);
+    //     fFont->drawGlyphs(*this, x, y, cs.c_str(), cs.c_str_len());
+    // }
 }
 
 void Graphics::drawChars(const char *data, int offset, int len, int x, int y) {
-    if (fFont != null)
-        fFont->drawGlyphs(*this, x, y, data + offset, len);
+    // if (fFont != null)
+    //     fFont->drawGlyphs(*this, x, y, data + offset, len);
 }
 
 void Graphics::drawString(int x, int y, char const * str) {
-    drawChars(str, 0, int(strlen(str)), x, y);
+    // drawChars(str, 0, int(strlen(str)), x, y);
 }
 
 void Graphics::drawStringEllipsis(int x, int y, const char *str, int maxWidth) {
+    return;
+
     int const len(strlen(str));
     int const w = (fFont != null) ? fFont->textWidth(str, len) : 0;
 
@@ -355,11 +377,13 @@ void Graphics::drawStringEllipsis(int x, int y, const char *str, int maxWidth) {
 }
 
 void Graphics::drawStringEllipsis(int x, int y, const ustring &str, int maxWidth) {
+    return;
     cstring cs(str);
     return drawStringEllipsis(x, y, cs.c_str(), maxWidth);
 }
 
 void Graphics::drawCharUnderline(int x, int y, const char *str, int charPos) {
+    return;
 /// TODO #warning "FIXME: don't mess with multibyte here, use a wide char"
     int left = 0; //fFont ? fFont->textWidth(str, charPos) : 0;
     int right = 0; // fFont ? fFont->textWidth(str, charPos + 1) - 1 : 0;
@@ -404,11 +428,13 @@ void Graphics::drawCharUnderline(int x, int y, const char *str, int charPos) {
 }
 
 void Graphics::drawCharUnderline(int x, int y, const ustring &str, int charPos) {
+    return;
     cstring cs(str);
     return drawCharUnderline(x, y, cs.c_str(), charPos);
 }
 
 void Graphics::drawStringMultiline(int x, int y, const char *str) {
+    return;
     unsigned const tx(x + fFont->multilineTabPos(str));
 
     for (const char * end(strchr(str, '\n')); end;
@@ -437,6 +463,7 @@ void Graphics::drawStringMultiline(int x, int y, const char *str) {
 }
 
 void Graphics::drawStringMultiline(int x, int y, const ustring &str) {
+    return;
     cstring cs(str);
     return drawStringMultiline(x, y, cs.c_str());
 }
@@ -444,8 +471,21 @@ void Graphics::drawStringMultiline(int x, int y, const ustring &str) {
 /******************************************************************************/
 
 void Graphics::fillRect(int x, int y, unsigned width, unsigned height) {
-    XFillRectangle(display(), drawable(), gc,
-                   x - xOrigin, y - yOrigin, width, height);
+
+    cairo_set_source_surface (k_gc, k_drawable(), x, y);
+    cairo_rectangle (k_gc, xOrigin, yOrigin, width, height);
+    cairo_fill (k_gc);
+
+    // cairo_t *cr = cairo_create(destination);
+    // cairo_set_source_surface(cr, source, x, y);
+    // cairo_paint(cr);
+
+    // cairo_set_source_surface(cr, source, dest_x - source_x, dest_y - source_y);
+    // cairo_rectangle(cr, dest_x, dest_y, width, height);
+    // cairo_fill(cr);
+
+    // XFillRectangle(display(), drawable(), gc,
+    //                x - xOrigin, y - yOrigin, width, height);
 }
 
 void Graphics::fillRects(XRectangle *rects, int n) {
@@ -453,7 +493,7 @@ void Graphics::fillRects(XRectangle *rects, int n) {
         rects[i].x -= xOrigin;
         rects[i].y -= yOrigin;
     }
-    XFillRectangles(display(), drawable(), gc, rects, n);
+    // XFillRectangles(display(), drawable(), gc, rects, n);
     for (int i = 0; i < n; i++) {
         rects[i].x += xOrigin;
         rects[i].y += yOrigin;
@@ -469,7 +509,7 @@ void Graphics::fillPolygon(XPoint *points, int const n, int const shape,
         points[i].x -= xOrigin;
         points[i].y -= yOrigin;
     }
-    XFillPolygon(display(), drawable(), gc, points, n, shape, mode);
+    // XFillPolygon(display(), drawable(), gc, points, n, shape, mode);
     for (int i = 0; i < n1; i++) {
         points[i].x += xOrigin;
         points[i].y += yOrigin;
@@ -477,8 +517,8 @@ void Graphics::fillPolygon(XPoint *points, int const n, int const shape,
 }
 
 void Graphics::fillArc(int x, int y, unsigned width, unsigned height, int a1, int a2) {
-    XFillArc(display(), drawable(), gc,
-             x - xOrigin, y - yOrigin, width, height, a1, a2);
+    // XFillArc(display(), drawable(), gc,
+    //          x - xOrigin, y - yOrigin, width, height, a1, a2);
 }
 
 /******************************************************************************/
@@ -490,10 +530,15 @@ void Graphics::setColor(YColor aColor) {
 }
 
 void Graphics::setColorPixel(unsigned long pixel) {
-    if (rdepth() == 32 && notbit(pixel, 0xFF000000) && xapp->alpha()) {
-        pixel |= 0xFF000000;
-    }
-    XSetForeground(display(), gc, pixel);
+    // if (rdepth() == 32 && notbit(pixel, 0xFF000000) && xapp->alpha()) {
+    //     pixel |= 0xFF000000;
+    // }
+    // XSetForeground(display(), gc, pixel);
+
+    cairo_set_source_rgba(k_gc, (double)((pixel & 0xff0000)>>16)/255.0,
+                                (double)((pixel & 0xff00)>>8)/255.0,
+                                (double)((pixel & 0xff))/255.0,
+                                1);
 }
 
 void Graphics::setFont(ref<YFont> aFont) {
@@ -501,12 +546,13 @@ void Graphics::setFont(ref<YFont> aFont) {
 }
 
 void Graphics::setLineWidth(unsigned width) {
-    XGCValues gcv;
-    gcv.line_width = int(width);
-    XChangeGC(display(), gc, GCLineWidth, &gcv);
+    // XGCValues gcv;
+    // gcv.line_width = int(width);
+    // XChangeGC(display(), gc, GCLineWidth, &gcv);
 }
 
 void Graphics::setPenStyle(bool dotLine) {
+    return;
     XGCValues gcv;
     unsigned long mask = GCLineStyle;
     gcv.line_style = dotLine ? LineOnOffDash : LineSolid;
@@ -527,7 +573,7 @@ void Graphics::setPenStyle(bool dotLine) {
 }
 
 void Graphics::setFunction(int function) {
-    XSetFunction(display(), gc, function);
+    // XSetFunction(display(), gc, function);
 }
 
 /******************************************************************************/
@@ -537,27 +583,43 @@ void Graphics::drawImage(ref<YImage> img, int const x, int const y) {
 }
 
 void Graphics::drawImage(ref<YImage> img, int x, int y, unsigned w, unsigned h, int dx, int dy) {
-    if (picture()) {
-        unsigned depth = max(img->depth(), rdepth());
-        ref<YPixmap> pix(img->renderToPixmap(depth, img->depth() == 32));
-        if (pix != null) {
-            Picture source = pix->picture();
-            XRenderComposite(display(),
-                             img->hasAlpha() ? PictOpOver : PictOpSrc,
-                             source, None, picture(),
-                             x, y, 0, 0, dx, dy, w, h);
-            return;
-        }
-    }
-    if (img->supportsDepth(rdepth())) {
-        img->draw(*this, x, y, w, h, dx, dy);
-    }
-    else {
-        ref<YPixmap> pix(img->renderToPixmap(rdepth()));
-        if (pix != null) {
-            drawPixmap(pix, x, y, w, h, dx, dy);
-        }
-    }
+
+    // if (picture()) {
+    //     unsigned depth = max(img->depth(), rdepth());
+    //     ref<YPixmap> pix(img->renderToPixmap(depth, img->depth() == 32));
+    //     if (pix != null) {
+    //         Picture source = pix->picture();
+    //         XRenderComposite(display(),
+    //                          img->hasAlpha() ? PictOpOver : PictOpSrc,
+    //                          source, None, picture(),
+    //                          x, y, 0, 0, dx, dy, w, h);
+    //         return;
+    //     }
+    // }
+
+
+
+    // if (picture()) {
+    //     unsigned depth = max(img->depth(), rdepth());
+    //     ref<YPixmap> pix(img->renderToPixmap(depth, img->depth() == 32));
+    //     if (pix != null) {
+    //         Picture source = pix->picture();
+    //         XRenderComposite(display(),
+    //                          img->hasAlpha() ? PictOpOver : PictOpSrc,
+    //                          source, None, picture(),
+    //                          x, y, 0, 0, dx, dy, w, h);
+    //         return;
+    //     }
+    // }
+    // if (img->supportsDepth(rdepth())) {
+    //     img->draw(*this, x, y, w, h, dx, dy);
+    // }
+    // else {
+    //     ref<YPixmap> pix(img->renderToPixmap(rdepth()));
+    //     if (pix != null) {
+    //         drawPixmap(pix, x, y, w, h, dx, dy);
+    //     }
+    // }
 }
 
 void Graphics::drawPixmap(ref<YPixmap> pix, int const x, int const y) {
@@ -566,6 +628,7 @@ void Graphics::drawPixmap(ref<YPixmap> pix, int const x, int const y) {
 
 void Graphics::drawPixmap(ref<YPixmap> pix, int const sx, int const sy,
         const unsigned w, const unsigned h, const int dx, const int dy) {
+    return;            
     Pixmap pixmap(pix->pixmap(rdepth()));
     if (pixmap == None) {
         tlog("Graphics::%s: attempt to draw pixmap 0x%lx of depth %d with gc of depth %d\n",
@@ -582,14 +645,15 @@ void Graphics::drawPixmap(ref<YPixmap> pix, int const sx, int const sy,
 }
 
 void Graphics::drawMask(ref<YPixmap> pix, int const x, int const y) {
-    if (pix->mask())
-        XCopyArea(display(), pix->mask(), drawable(), gc,
-                  0, 0, pix->width(), pix->height(), x - xOrigin, y - yOrigin);
+    // if (pix->mask())
+    //     XCopyArea(display(), pix->mask(), drawable(), gc,
+    //               0, 0, pix->width(), pix->height(), x - xOrigin, y - yOrigin);
 }
 
 void Graphics::drawClippedPixmap(Pixmap pix, Pixmap clip,
                                  int x, int y, unsigned w, unsigned h, int toX, int toY)
 {
+    return;
     unsigned long mask =
         GCGraphicsExposures | GCClipMask | GCClipXOrigin | GCClipYOrigin;
     XGCValues gcv;
@@ -605,6 +669,7 @@ void Graphics::drawClippedPixmap(Pixmap pix, Pixmap clip,
 
 void Graphics::compositeImage(ref<YImage> img, int const sx, int const sy, unsigned w, unsigned h, int dx, int dy) {
 
+    return;
     if (picture()) {
         int rx = dx;
         int ry = dy;
@@ -662,6 +727,7 @@ void Graphics::compositeImage(ref<YImage> img, int const sx, int const sy, unsig
 /******************************************************************************/
 
 void Graphics::draw3DRect(int x, int y, unsigned wid, unsigned hei, bool raised) {
+    return;
     YColor back(color());
     YColor bright(back.brighter());
     YColor dark(back.darker());
@@ -681,6 +747,7 @@ void Graphics::draw3DRect(int x, int y, unsigned wid, unsigned hei, bool raised)
 }
 
 void Graphics::drawBorderW(int x, int y, unsigned wid, unsigned hei, bool raised) {
+    return;
     YColor back(color());
     YColor bright(back.brighter());
     YColor dark(back.darker());
@@ -713,6 +780,7 @@ void Graphics::drawBorderW(int x, int y, unsigned wid, unsigned hei, bool raised
 // doesn't move... needs two pixels on all sides for up and down
 // position.
 void Graphics::drawBorderM(int x, int y, unsigned wid, unsigned hei, bool raised) {
+    return;
     YColor back(color());
     YColor bright(back.brighter());
     YColor dark(back.darker());
@@ -759,6 +827,7 @@ void Graphics::drawBorderM(int x, int y, unsigned wid, unsigned hei, bool raised
 }
 
 void Graphics::drawBorderG(int x, int y, unsigned wid, unsigned hei, bool raised) {
+    return;
     YColor back(color());
     YColor bright(back.brighter());
     YColor dark(back.darker());
@@ -789,6 +858,7 @@ void Graphics::drawBorderG(int x, int y, unsigned wid, unsigned hei, bool raised
 }
 
 void Graphics::drawCenteredPixmap(int x, int y, unsigned w, unsigned h, ref<YPixmap> pixmap) {
+    return;
     int r = x + w;
     int b = y + h;
     int pw = pixmap->width();
@@ -799,6 +869,7 @@ void Graphics::drawCenteredPixmap(int x, int y, unsigned w, unsigned h, ref<YPix
 }
 
 void Graphics::drawOutline(int l, int t, int r, int b, unsigned iw, unsigned ih) {
+    return;
     if (l + (int)iw >= r && t + (int)ih >= b)
         return ;
 
@@ -823,6 +894,7 @@ void Graphics::drawOutline(int l, int t, int r, int b, unsigned iw, unsigned ih)
 }
 
 void Graphics::repHorz(Drawable d, unsigned pw, unsigned ph, int x, int y, unsigned w) {
+    return;
     if (d == None)
         return;
 #if 1
@@ -841,6 +913,8 @@ void Graphics::repHorz(Drawable d, unsigned pw, unsigned ph, int x, int y, unsig
 }
 
 void Graphics::repVert(Drawable d, unsigned pw, unsigned ph, int x, int y, unsigned h) {
+        return;
+
     if (d == None)
         return;
 #if 1
@@ -859,6 +933,8 @@ void Graphics::repVert(Drawable d, unsigned pw, unsigned ph, int x, int y, unsig
 }
 
 void Graphics::repHorz(ref<YPixmap> p, int x, int y, unsigned w) {
+        return;
+
     if (p == null)
         return;
 
@@ -866,6 +942,8 @@ void Graphics::repHorz(ref<YPixmap> p, int x, int y, unsigned w) {
 }
 
 void Graphics::repVert(ref<YPixmap> p, int x, int y, unsigned h) {
+        return;
+
     if (p == null)
         return;
 
@@ -874,7 +952,8 @@ void Graphics::repVert(ref<YPixmap> p, int x, int y, unsigned h) {
 
 void Graphics::fillPixmap(ref<YPixmap> pixmap, int x, int y,
                           unsigned w, unsigned h, int px, int py) {
-    Pixmap xpixmap(pixmap->pixmap(rdepth()));
+    // Pixmap xpixmap(pixmap->pixmap(rdepth()));
+    cairo_surface_t* xpixmap = pixmap->k_pixmap();
     int const pw(pixmap->width());
     int const ph(pixmap->height());
     if (xpixmap == None)
@@ -885,31 +964,58 @@ void Graphics::fillPixmap(ref<YPixmap> pixmap, int x, int y,
 
     if (px) {
         if (py)
-            XCopyArea(display(), xpixmap, drawable(), gc,
-                      px, py, pww, phh, x - xOrigin, y - yOrigin);
+        {
+            cairo_surface_t* src = 
+            cairo_surface_create_for_rectangle(xpixmap, px, py, pww, phh);
+            cairo_set_source_surface(k_gc, src, x - xOrigin, y - yOrigin);
+            cairo_paint(k_gc);
+            // XCopyArea(display(), xpixmap, drawable(), gc,
+            //           px, py, pww, phh, x - xOrigin, y - yOrigin);
+        }
 
         for (int yy(y + phh), hh(h - phh); hh > 0; yy += ph, hh -= ph)
-            XCopyArea(display(), xpixmap, drawable(), gc,
-                      px, 0, pww, min(hh, ph), x - xOrigin, yy - yOrigin);
+        {
+            cairo_surface_t* src = 
+            cairo_surface_create_for_rectangle(xpixmap, px, 0, pww, min(hh, ph));
+            cairo_set_source_surface(k_gc, src, x - xOrigin, yy - yOrigin);
+            cairo_paint(k_gc);
+            // XCopyArea(display(), xpixmap, drawable(), gc,
+            //           px, 0, pww, min(hh, ph), x - xOrigin, yy - yOrigin);
+        }
     }
 
     for (int xx(x + pww), ww(w - pww); ww > 0; xx+= pw, ww-= pw) {
         int const www(min(ww, pw));
 
         if (py)
-            XCopyArea(display(), xpixmap, drawable(), gc,
-                      0, py, www, phh, xx - xOrigin, y - yOrigin);
+        {
+            cairo_surface_t* src = 
+            cairo_surface_create_for_rectangle(xpixmap, 0, py, www, phh);
+            cairo_set_source_surface(k_gc, src, xx - xOrigin, y - yOrigin);
+            cairo_paint(k_gc);
+            // XCopyArea(display(), xpixmap, drawable(), gc,
+            //           0, py, www, phh, xx - xOrigin, y - yOrigin);
+        }
 
         for (int yy(y + phh), hh(h - phh); hh > 0; yy += ph, hh -= ph)
-            XCopyArea(display(), xpixmap, drawable(), gc,
-                      0, 0, www, min(hh, ph), xx - xOrigin, yy - yOrigin);
+        {
+            cairo_surface_t* src = 
+            cairo_surface_create_for_rectangle(xpixmap, 0, 0, www, min(hh, ph));
+            cairo_set_source_surface(k_gc, src, xx - xOrigin, yy - yOrigin);
+            cairo_paint(k_gc);
+            // XCopyArea(display(), xpixmap, drawable(), gc,
+            //           0, 0, www, min(hh, ph), xx - xOrigin, yy - yOrigin);
+        }
     }
+
 }
 
 void Graphics::drawSurface(YSurface const & surface, int x, int y, unsigned w, unsigned h,
                            int const sx, int const sy,
                            const unsigned sw, const unsigned sh
 ) {
+        return;
+
     if (surface.gradient != null)
         drawGradient(surface.gradient, x, y, w, h, sx, sy, sw, sh);
     else
@@ -925,6 +1031,8 @@ void Graphics::drawGradient(ref<YImage> gradient,
                             int const x, int const y, const unsigned w, const unsigned h,
                             int const gx, int const gy, const unsigned gw, const unsigned gh)
 {
+        return;
+
     ref<YImage> scaled = gradient->scale(gw, gh);
     if (scaled != null)
         scaled->draw(*this, gx, gy, w, h, x, y);
@@ -935,6 +1043,8 @@ void Graphics::drawGradient(ref<YImage> gradient,
 void Graphics::drawArrow(YDirection direction, int x, int y, unsigned size,
                          bool pressed)
 {
+        return;
+
     YColor nc(color());
     YColor oca = pressed ? nc.darker() : nc.brighter(),
         ica = pressed ? YColor::black : nc,
@@ -1045,6 +1155,7 @@ void Graphics::drawArrow(YDirection direction, int x, int y, unsigned size,
 }
 
 int Graphics::function() const {
+    
     XGCValues values;
     XGetGCValues(display(), gc, GCFunction, &values);
     return values.function;
@@ -1057,6 +1168,8 @@ unsigned long Graphics::getColorPixel() const {
 }
 
 void Graphics::setClipRectangles(XRectangle *rect, int count) {
+        return;
+
     XSetClipRectangles(display(), gc,
                        -xOrigin, -yOrigin, rect, count, Unsorted);
 #ifdef CONFIG_XFREETYPE
@@ -1065,10 +1178,14 @@ void Graphics::setClipRectangles(XRectangle *rect, int count) {
 }
 
 void Graphics::setClipMask(Pixmap mask) {
+        return;
+
     XSetClipMask(display(), gc, mask);
 }
 
 void Graphics::resetClip() {
+        return;
+
     XSetClipMask(display(), gc, None);
 #ifdef CONFIG_XFREETYPE
     XftDrawSetClip(handleXft(), 0);
