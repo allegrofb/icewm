@@ -2148,19 +2148,6 @@ void mycpu()
 
 
 #include "widget.h"
-
-// static gboolean cpu_draw_cb(GtkWidget *widget, cairo_t *cr, void* data)
-// {
-// //    printf("2. %p\n", widget);
-// //    printf("3. %p\n", data);
-//    cairo_translate(cr, 0, 7);
-
-//    cairo_set_source_rgb(cr, 0, 0, 0);
-//    cairo_paint(cr);
-
-//    return TRUE;
-// }
-
 #include "acpustatus.h"
 
 void CPUStatusView()
@@ -2174,14 +2161,31 @@ void CPUStatusView()
    debug = 1;
 
    CPUStatus* status = new CPUStatus(NULL, NULL);
-//    printf("1. %p\n", status);
    cpu = status->getWidget();
    gtk_container_add(GTK_CONTAINER(window), cpu);
-
-//    g_signal_connect(cpu, "draw", G_CALLBACK(cpu_draw_cb), status);
-
    gtk_widget_show_all(window);
 }
+
+#include "aclock.h"
+
+void ClockView()
+{
+   GtkWidget *window;
+   GtkWidget *clock;
+
+   window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+   g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit ), NULL);
+
+   debug = 1;
+
+   YClock* status = new YClock(NULL, NULL, NULL);
+   clock = status->getWidget();
+   gtk_container_add(GTK_CONTAINER(window), clock);
+   gtk_widget_show_all(window);
+}
+
+
+
 
 int main(int argc, char *argv[]) {
 
@@ -2270,7 +2274,8 @@ int main(int argc, char *argv[]) {
 
     // iconView();
     // mycpu();
-    CPUStatusView();
+    // CPUStatusView();
+    ClockView();
     gtk_main();
 
     return 0;

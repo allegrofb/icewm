@@ -1266,12 +1266,12 @@ void YWindow::configure(const YRect2& r2)
 void YWindow::setPointer(const YCursor& pointer) {
     fPointer = pointer;
 
-    if (flags & wfCreated) {
-        XSetWindowAttributes attributes;
-        attributes.cursor = fPointer.handle();
-        XChangeWindowAttributes(xapp->display(), handle(),
-                                CWCursor, &attributes);
-    }
+    // if (flags & wfCreated) {
+    //     XSetWindowAttributes attributes;
+    //     attributes.cursor = fPointer.handle();
+    //     XChangeWindowAttributes(xapp->display(), handle(),
+    //                             CWCursor, &attributes);
+    // }
 }
 
 void YWindow::setGrabPointer(const YCursor& pointer) {
@@ -1571,8 +1571,8 @@ void YWindow::removeAccelerator(unsigned int key, unsigned int mod, YWindow *win
 const Atom XdndCurrentVersion = 3;
 
 void YWindow::setProperty(Atom prop, Atom type, const Atom* values, int count) {
-    XChangeProperty(xapp->display(), handle(), prop, type, 32, PropModeReplace,
-                    reinterpret_cast<const unsigned char *>(values), count);
+    // XChangeProperty(xapp->display(), handle(), prop, type, 32, PropModeReplace,
+    //                 reinterpret_cast<const unsigned char *>(values), count);
 }
 
 void YWindow::setProperty(Atom property, Atom propType, Atom value) {
@@ -1595,11 +1595,11 @@ void YWindow::setDND(bool enabled) {
     if (fDND != enabled) {
         fDND = enabled;
 
-        if (fDND) {
-            setProperty(XA_XdndAware, XA_ATOM, XdndCurrentVersion);
-        } else {
-            XDeleteProperty(xapp->display(), handle(), XA_XdndAware);
-        }
+        // if (fDND) {
+        //     setProperty(XA_XdndAware, XA_ATOM, XdndCurrentVersion);
+        // } else {
+        //     XDeleteProperty(xapp->display(), handle(), XA_XdndAware);
+        // }
     }
 }
 
@@ -2042,7 +2042,7 @@ Pixmap YWindow::createPixmap() {
 }
 
 cairo_surface_t* YWindow::createKPixmap() {
-    fWidth = 20;                                     //hyjiang
+    fWidth = 150; //hyjiang
     fHeight = 20;
     MSG(("YWindow::createKPixmap %d %d\n",
             fWidth, fHeight));

@@ -145,7 +145,7 @@ TaskBar::TaskBar(IApp *app, YWindow *aParent, YActionListener *wmActionListener,
 
     ///setToplevel(true);
 
-    addStyle(wsNoExpose);
+    // addStyle(wsNoExpose);
 
     setWinHintsHint(WinHintsSkipFocus |
                     WinHintsSkipWindowMenu |
@@ -155,22 +155,22 @@ TaskBar::TaskBar(IApp *app, YWindow *aParent, YActionListener *wmActionListener,
     setWinLayerHint((taskBarAutoHide || fFullscreen) ? WinLayerAboveAll :
                     fIsCollapsed ? WinLayerAboveDock :
                     taskBarKeepBelow ? WinLayerBelow : WinLayerDock);
-    Atom protocols[2] = {
-      _XA_WM_DELETE_WINDOW,
-      _XA_WM_TAKE_FOCUS
-      //_NET_WM_PING,
-      //_NET_WM_SYNC_REQUEST,
-    };
-    XSetWMProtocols(xapp->display(), handle(), protocols, 2);
+    // Atom protocols[2] = {
+    //   _XA_WM_DELETE_WINDOW,
+    //   _XA_WM_TAKE_FOCUS
+    //   //_NET_WM_PING,
+    //   //_NET_WM_SYNC_REQUEST,
+    // };
+    // XSetWMProtocols(xapp->display(), handle(), protocols, 2);
 
-    {
-        XWMHints wmhints = { InputHint, False, };
-        ClassHint clhint("icewm", "TaskBar");
-        YTextProperty text("TaskBar");
-        XSetWMProperties(xapp->display(), handle(), &text, &text,
-                         nullptr, 0, nullptr, &wmhints, &clhint);
-        setProperty(_XA_NET_WM_PID, XA_CARDINAL, getpid());
-    }
+    // {
+    //     XWMHints wmhints = { InputHint, False, };
+    //     ClassHint clhint("icewm", "TaskBar");
+    //     YTextProperty text("TaskBar");
+    //     XSetWMProperties(xapp->display(), handle(), &text, &text,
+    //                      nullptr, 0, nullptr, &wmhints, &clhint);
+    //     setProperty(_XA_NET_WM_PID, XA_CARDINAL, getpid());
+    // }
 
     setMwmHints(MwmHints(
        MWM_HINTS_FUNCTIONS | MWM_HINTS_DECORATIONS,

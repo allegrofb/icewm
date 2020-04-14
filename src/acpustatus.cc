@@ -96,7 +96,7 @@ CPUStatus::CPUStatus(YWindow *aParent, CPUStatusHandler *aHandler, int cpuid) :
     }
     memset(last_cpu, 0, sizeof(last_cpu));
 
-    fUpdateTimer->setTimer(taskBarCPUDelay, this, true);
+    // fUpdateTimer->setTimer(taskBarCPUDelay, this, true);
     g_timeout_add(taskBarCPUDelay, (GSourceFunc) time_handler, (gpointer) this);
 
     tempColor = &clrCpuTemp;

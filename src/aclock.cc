@@ -28,6 +28,11 @@ char const * YClock::strTimeFmt(struct tm const & t) {
     return AppletClockTimeFmt;
 }
 
+gboolean time_handler(YClock *clock) 
+{
+    return clock->handleTimer(clock->clockTimer._ptr());
+}
+
 YClock::YClock(YSMListener *smActionListener, IAppletContainer* iapp, YWindow *aParent):
     IApplet(this, aParent),
     clockUTC(false),
@@ -51,14 +56,18 @@ YClock::YClock(YSMListener *smActionListener, IAppletContainer* iapp, YWindow *a
     if (prettyClock && ledPixSpace != null && ledPixSpace->width() == 1)
         ledPixSpace = ledPixSpace->scale(5, ledPixSpace->height());
 
-    clockTimer->setFixed();
-    clockTimer->setTimer(1000, this, true);
+    // clockTimer->setFixed();
+    // clockTimer->setTimer(1000, this, true);
+    g_timeout_add(1000, (GSourceFunc) time_handler, (gpointer) this);
 
     autoSize();
     updateToolTip();
     setDND(true);
     setTitle("Clock");
     show();
+
+    isVisible = true;   //hyjiang, default set true
+    setVisible(true); //hyjiang, default show
 }
 
 YClock::~YClock() {
@@ -234,7 +243,32 @@ bool YClock::picture() {
          : create;
 }
 
+bool YClock::k_picture() {
+    bool create = (hasKPixmap() == false);
+
+    MSG((_("YClock::k_picture %d\n"),
+        1));
+
+    Graphics G(getKPixmap(), width(), height(), depth());
+
+    MSG((_("YClock::k_picture %d\n"),
+        2));
+
+    if (create)
+        fill(G);
+
+    MSG((_("YClock::k_picture %d\n"),
+        3));
+
+    return clockTicked
+         ? clockTicked = false, draw(G), true
+         : create;
+}
+
 bool YClock::draw(Graphics& g) {
+    MSG((_("YClock::draw %d\n"),
+        1));
+
     char s[TimeSize];
     timeval walltm = walltime();
     long nextChime = 1000L - walltm.tv_usec / 1000L;
@@ -242,7 +276,7 @@ bool YClock::draw(Graphics& g) {
     struct tm *t;
     int len;
 
-    clockTimer->setTimer(nextChime, this, true);
+    // clockTimer->setTimer(nextChime, this, true);
 
     if (clockUTC)
         t = gmtime(&newTime);
@@ -269,22 +303,22 @@ void YClock::fill(Graphics& g)
         return;
     }
 
-    if (hasTransparency()) {
-        ref<YImage> gradient(getGradient());
+    // if (hasTransparency()) {
+    //     ref<YImage> gradient(getGradient());
 
-        if (gradient != null)
-            g.drawImage(gradient, this->x(), this->y(),
-                         width(), height(), 0, 0);
-        else
-        if (taskbackPixmap != null) {
-            g.fillPixmap(taskbackPixmap, 0, 0,
-                         width(), height(), this->x(), this->y());
-        }
-        else {
-            g.setColor(taskBarBg);
-            g.fillRect(0, 0, width(), height());
-        }
-    }
+    //     if (gradient != null)
+    //         g.drawImage(gradient, this->x(), this->y(),
+    //                      width(), height(), 0, 0);
+    //     else
+    //     if (taskbackPixmap != null) {
+    //         g.fillPixmap(taskbackPixmap, 0, 0,
+    //                      width(), height(), this->x(), this->y());
+    //     }
+    //     else {
+    //         g.setColor(taskBarBg);
+    //         g.fillRect(0, 0, width(), height());
+    //     }
+    // }
 }
 
 void YClock::fill(Graphics& g, int x, int y, int w, int h)
@@ -361,10 +395,17 @@ bool YClock::paintPretty(Graphics& g, const char* s, int len) {
 }
 
 bool YClock::paintPlain(Graphics& g, const char* s, int len) {
+
+    MSG((_("YClock::paintPlain %d\n"),
+        1));
+
     fill(g);
     if (!prettyClock) {
         int y =  (height() - 1 - clockFont->height()) / 2
             + clockFont->ascent();
+
+        MSG((_("YClock::paintPlain %d, %s, %d, %d\n"),
+            2, s, len, y));
 
         g.setColor(clockFg);
         g.setFont(clockFont);

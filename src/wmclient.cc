@@ -42,7 +42,8 @@ bool operator!=(const XSizeHints& a, const XSizeHints& b) {
 
 YFrameClient::YFrameClient(YWindow *parent, YFrameWindow *frame, Window win,
                            int depth, Visual *visual, Colormap colormap):
-    YWindow(parent, win, depth, visual, colormap),
+    // YWindow(parent, win, depth, visual, colormap),   //hyjiang
+    YWindow(1),
     fWindowTitle(),
     fIconTitle(),
     fWMWindowRole(),
@@ -110,112 +111,112 @@ YFrameClient::~YFrameClient() {
     if (fMwmHints) { XFree(fMwmHints); fMwmHints = 0; }
 }
 
-void YFrameClient::getProtocols(bool force) {
-    if (!prop.wm_protocols && !force)
-        return;
+void YFrameClient::getProtocols(bool force) {    //hyjiang
+    // if (!prop.wm_protocols && !force)
+    //     return;
 
-    Atom *wmp = 0;
-    int count = 0;
+    // Atom *wmp = 0;
+    // int count = 0;
 
-    fProtocols &= wpDeleteWindow; // always keep WM_DELETE_WINDOW
+    // fProtocols &= wpDeleteWindow; // always keep WM_DELETE_WINDOW
 
-    if (XGetWMProtocols(xapp->display(), handle(), &wmp, &count) && wmp) {
-        prop.wm_protocols = true;
-        for (int i = 0; i < count; i++) {
-            fProtocols |=
-                (wmp[i] == _XA_WM_DELETE_WINDOW) ? wpDeleteWindow :
-                (wmp[i] == _XA_WM_TAKE_FOCUS) ? wpTakeFocus :
-                (wmp[i] == _XA_NET_WM_PING) ? wpPing :
-                0;
-        }
-        XFree(wmp);
-    }
+    // if (XGetWMProtocols(xapp->display(), handle(), &wmp, &count) && wmp) {
+    //     prop.wm_protocols = true;
+    //     for (int i = 0; i < count; i++) {
+    //         fProtocols |=
+    //             (wmp[i] == _XA_WM_DELETE_WINDOW) ? wpDeleteWindow :
+    //             (wmp[i] == _XA_WM_TAKE_FOCUS) ? wpTakeFocus :
+    //             (wmp[i] == _XA_NET_WM_PING) ? wpPing :
+    //             0;
+    //     }
+    //     XFree(wmp);
+    // }
 }
 
-void YFrameClient::getSizeHints() {
-    if (fSizeHints) {
-        long supplied;
+void YFrameClient::getSizeHints() {    //hyjiang
+    // if (fSizeHints) {
+    //     long supplied;
 
-        if (!prop.wm_normal_hints ||
-            !XGetWMNormalHints(xapp->display(),
-                               handle(),
-                               fSizeHints, &supplied))
-            fSizeHints->flags = 0;
+    //     if (!prop.wm_normal_hints ||
+    //         !XGetWMNormalHints(xapp->display(),
+    //                            handle(),
+    //                            fSizeHints, &supplied))
+    //         fSizeHints->flags = 0;
 
-        if (fSizeHints->flags & PResizeInc) {
-            if (fSizeHints->width_inc == 0) fSizeHints->width_inc = 1;
-            if (fSizeHints->height_inc == 0) fSizeHints->height_inc = 1;
-        } else
-            fSizeHints->width_inc = fSizeHints->height_inc = 1;
+    //     if (fSizeHints->flags & PResizeInc) {
+    //         if (fSizeHints->width_inc == 0) fSizeHints->width_inc = 1;
+    //         if (fSizeHints->height_inc == 0) fSizeHints->height_inc = 1;
+    //     } else
+    //         fSizeHints->width_inc = fSizeHints->height_inc = 1;
 
 
-        if (!(fSizeHints->flags & PBaseSize)) {
-            if (fSizeHints->flags & PMinSize) {
-                fSizeHints->base_width = fSizeHints->min_width;
-                fSizeHints->base_height = fSizeHints->min_height;
-            } else
-                fSizeHints->base_width = fSizeHints->base_height = 0;
-        }
-        if (!(fSizeHints->flags & PMinSize)) {
-            fSizeHints->min_width = fSizeHints->base_width;
-            fSizeHints->min_height = fSizeHints->base_height;
-        }
-        if (!(fSizeHints->flags & PMaxSize)) {
-            fSizeHints->max_width = 32767;
-            fSizeHints->max_height = 32767;
-        }
-        if (fSizeHints->max_width < fSizeHints->min_width)
-            fSizeHints->max_width = 32767;
-        if (fSizeHints->max_height < fSizeHints->min_height)
-            fSizeHints->max_height = 32767;
+    //     if (!(fSizeHints->flags & PBaseSize)) {
+    //         if (fSizeHints->flags & PMinSize) {
+    //             fSizeHints->base_width = fSizeHints->min_width;
+    //             fSizeHints->base_height = fSizeHints->min_height;
+    //         } else
+    //             fSizeHints->base_width = fSizeHints->base_height = 0;
+    //     }
+    //     if (!(fSizeHints->flags & PMinSize)) {
+    //         fSizeHints->min_width = fSizeHints->base_width;
+    //         fSizeHints->min_height = fSizeHints->base_height;
+    //     }
+    //     if (!(fSizeHints->flags & PMaxSize)) {
+    //         fSizeHints->max_width = 32767;
+    //         fSizeHints->max_height = 32767;
+    //     }
+    //     if (fSizeHints->max_width < fSizeHints->min_width)
+    //         fSizeHints->max_width = 32767;
+    //     if (fSizeHints->max_height < fSizeHints->min_height)
+    //         fSizeHints->max_height = 32767;
 
-        if (fSizeHints->min_height <= 0)
-            fSizeHints->min_height = 1;
-        if (fSizeHints->min_width <= 0)
-            fSizeHints->min_width = 1;
+    //     if (fSizeHints->min_height <= 0)
+    //         fSizeHints->min_height = 1;
+    //     if (fSizeHints->min_width <= 0)
+    //         fSizeHints->min_width = 1;
 
-        if (!(fSizeHints->flags & PWinGravity)) {
-            fSizeHints->win_gravity = NorthWestGravity;
-            fSizeHints->flags |= PWinGravity;
-        }
-    }
+    //     if (!(fSizeHints->flags & PWinGravity)) {
+    //         fSizeHints->win_gravity = NorthWestGravity;
+    //         fSizeHints->flags |= PWinGravity;
+    //     }
+    // }
 }
 
-void YFrameClient::getClassHint() {
-    if (!prop.wm_class)
-        return;
+void YFrameClient::getClassHint() {   //hyjiang
+    // if (!prop.wm_class)
+    //     return;
 
-    fClassHint.reset();
-    XGetClassHint(xapp->display(), handle(), &fClassHint);
+    // fClassHint.reset();
+    // XGetClassHint(xapp->display(), handle(), &fClassHint);
 }
 
-void YFrameClient::getTransient() {
-    if (!prop.wm_transient_for)
-        return;
+void YFrameClient::getTransient() {   //hyjiang
+    // if (!prop.wm_transient_for)
+    //     return;
 
-    Window newTransientFor = 0;
+    // Window newTransientFor = 0;
 
-    if (XGetTransientForHint(xapp->display(),
-                             handle(),
-                             &newTransientFor))
-    {
-        if (//newTransientFor == manager->handle() || /* bug in xfm */
-            //newTransientFor == desktop->handle() ||
-            newTransientFor == handle()             /* bug in fdesign */
-            /* !!! TODO: check for recursion */
-           )
-            newTransientFor = 0;
-    }
+    // if (XGetTransientForHint(xapp->display(),
+    //                          handle(),
+    //                          &newTransientFor))
+    // {
+    //     if (//newTransientFor == manager->handle() || /* bug in xfm */
+    //         //newTransientFor == desktop->handle() ||
+    //         newTransientFor == handle()             /* bug in fdesign */
+    //         /* !!! TODO: check for recursion */
+    //        )
+    //         newTransientFor = 0;
+    // }
 
-    if (newTransientFor != fTransientFor) {
-        if (fTransientFor)
-            if (getFrame())
-                getFrame()->removeAsTransient();
-        fTransientFor = newTransientFor;
-        if (fTransientFor)
-            if (getFrame())
-                getFrame()->addAsTransient();
-    }
+    // if (newTransientFor != fTransientFor) {
+    //     if (fTransientFor)
+    //         if (getFrame())
+    //             getFrame()->removeAsTransient();
+    //     fTransientFor = newTransientFor;
+    //     if (fTransientFor)
+    //         if (getFrame())
+    //             getFrame()->addAsTransient();
+    // }
 }
 
 void YFrameClient::constrainSize(int &w, int &h, int flags)
@@ -466,17 +467,17 @@ void YFrameClient::setFrameState(FrameState state) {
     if (state == WithdrawnState) {
         if (manager->wmState() != YWindowManager::wmSHUTDOWN) {
             MSG(("deleting window properties id=%lX", handle()));
-            XDeleteProperty(xapp->display(), handle(), _XA_NET_FRAME_EXTENTS);
-            XDeleteProperty(xapp->display(), handle(), _XA_NET_WM_VISIBLE_NAME);
-            XDeleteProperty(xapp->display(), handle(), _XA_NET_WM_VISIBLE_ICON_NAME);
-            XDeleteProperty(xapp->display(), handle(), _XA_NET_WM_DESKTOP);
-            XDeleteProperty(xapp->display(), handle(), _XA_NET_WM_STATE);
-            XDeleteProperty(xapp->display(), handle(), _XA_NET_WM_ALLOWED_ACTIONS);
-            XDeleteProperty(xapp->display(), handle(), _XA_WIN_WORKSPACE);
-            XDeleteProperty(xapp->display(), handle(), _XA_WIN_LAYER);
-            XDeleteProperty(xapp->display(), handle(), _XA_WIN_TRAY);
-            XDeleteProperty(xapp->display(), handle(), _XA_WIN_STATE);
-            XDeleteProperty(xapp->display(), handle(), _XA_WM_STATE);
+            // XDeleteProperty(xapp->display(), handle(), _XA_NET_FRAME_EXTENTS);
+            // XDeleteProperty(xapp->display(), handle(), _XA_NET_WM_VISIBLE_NAME);
+            // XDeleteProperty(xapp->display(), handle(), _XA_NET_WM_VISIBLE_ICON_NAME);
+            // XDeleteProperty(xapp->display(), handle(), _XA_NET_WM_DESKTOP);
+            // XDeleteProperty(xapp->display(), handle(), _XA_NET_WM_STATE);
+            // XDeleteProperty(xapp->display(), handle(), _XA_NET_WM_ALLOWED_ACTIONS);
+            // XDeleteProperty(xapp->display(), handle(), _XA_WIN_WORKSPACE);
+            // XDeleteProperty(xapp->display(), handle(), _XA_WIN_LAYER);
+            // XDeleteProperty(xapp->display(), handle(), _XA_WIN_TRAY);
+            // XDeleteProperty(xapp->display(), handle(), _XA_WIN_STATE);
+            // XDeleteProperty(xapp->display(), handle(), _XA_WM_STATE);
             fSavedFrameState = InvalidFrameState;
             fSavedWinState[0] = fSavedWinState[1] = 0;
         }
@@ -979,93 +980,93 @@ void YFrameClient::handleClientMessage(const XClientMessageEvent &message) {
         YWindow::handleClientMessage(message);
 }
 
-void YFrameClient::getNameHint() {
-    if (!prop.wm_name)
-        return;
-    if (prop.net_wm_name)
-        return;
+void YFrameClient::getNameHint() {   //hyjiang
+//     if (!prop.wm_name)
+//         return;
+//     if (prop.net_wm_name)
+//         return;
 
-#ifdef CONFIG_I18N
-    XTextProperty name;
-    if (XGetWMName(xapp->display(), handle(), &name))
-#else
-    char *name;
-    if (XFetchName(xapp->display(), handle(), &name))
-#endif
-    {
-        setWindowTitle(name);
-#ifdef CONFIG_I18N
-        XFree(name.value);
-#else
-        XFree(name);
-#endif
-    }
-    else
-        setWindowTitle(NULL);
+// #ifdef CONFIG_I18N
+//     XTextProperty name;
+//     if (XGetWMName(xapp->display(), handle(), &name))
+// #else
+//     char *name;
+//     if (XFetchName(xapp->display(), handle(), &name))
+// #endif
+//     {
+//         setWindowTitle(name);
+// #ifdef CONFIG_I18N
+//         XFree(name.value);
+// #else
+//         XFree(name);
+// #endif
+//     }
+//     else
+//         setWindowTitle(NULL);
 }
 
-void YFrameClient::getNetWmName() {
-    if (!prop.net_wm_name)
-        return;
+void YFrameClient::getNetWmName() {    //hyjiang
+    // if (!prop.net_wm_name)
+    //     return;
 
-    XTextProperty name;
-    if (XGetTextProperty(xapp->display(), handle(), &name,
-                _XA_NET_WM_NAME))
-    {
-        setWindowTitle((char *)name.value);
-        XFree(name.value);
-    }
-    else
-        setWindowTitle(NULL);
+    // XTextProperty name;
+    // if (XGetTextProperty(xapp->display(), handle(), &name,
+    //             _XA_NET_WM_NAME))
+    // {
+    //     setWindowTitle((char *)name.value);
+    //     XFree(name.value);
+    // }
+    // else
+    //     setWindowTitle(NULL);
 }
 
-void YFrameClient::getIconNameHint() {
-    if (!prop.wm_icon_name)
-        return;
-    if (prop.net_wm_icon_name)
-        return;
+void YFrameClient::getIconNameHint() {   //hyjiang
+//     if (!prop.wm_icon_name)
+//         return;
+//     if (prop.net_wm_icon_name)
+//         return;
 
-#ifdef CONFIG_I18N
-    XTextProperty name;
-    if (XGetWMIconName(xapp->display(), handle(), &name))
-#else
-    char *name;
-    if (XGetIconName(xapp->display(), handle(), &name))
-#endif
-    {
-        setIconTitle(name);
-#ifdef CONFIG_I18N
-        XFree(name.value);
-#else
-        XFree(name);
-#endif
-    }
-    else
-        setIconTitle(NULL);
+// #ifdef CONFIG_I18N
+//     XTextProperty name;
+//     if (XGetWMIconName(xapp->display(), handle(), &name))
+// #else
+//     char *name;
+//     if (XGetIconName(xapp->display(), handle(), &name))
+// #endif
+//     {
+//         setIconTitle(name);
+// #ifdef CONFIG_I18N
+//         XFree(name.value);
+// #else
+//         XFree(name);
+// #endif
+//     }
+//     else
+//         setIconTitle(NULL);
 }
 
-void YFrameClient::getNetWmIconName() {
-    if (!prop.net_wm_icon_name)
-        return;
+void YFrameClient::getNetWmIconName() {   //hyjiang
+    // if (!prop.net_wm_icon_name)
+    //     return;
 
-    XTextProperty name;
-    if (XGetTextProperty(xapp->display(), handle(), &name,
-                _XA_NET_WM_ICON_NAME))
-    {
-        setIconTitle((char *)name.value);
-        XFree(name.value);
-    }
-    else
-        setIconTitle(NULL);
+    // XTextProperty name;
+    // if (XGetTextProperty(xapp->display(), handle(), &name,
+    //             _XA_NET_WM_ICON_NAME))
+    // {
+    //     setIconTitle((char *)name.value);
+    //     XFree(name.value);
+    // }
+    // else
+    //     setIconTitle(NULL);
 }
 
-void YFrameClient::getWMHints() {
-    if (!prop.wm_hints)
-        return;
+void YFrameClient::getWMHints() {   //hyjiang
+    // if (!prop.wm_hints)
+    //     return;
 
-    if (fHints)
-        XFree(fHints);
-    fHints = XGetWMHints(xapp->display(), handle());
+    // if (fHints)
+    //     XFree(fHints);
+    // fHints = XGetWMHints(xapp->display(), handle());
 }
 
 void YFrameClient::getMwmHints() {
@@ -1382,14 +1383,14 @@ void YFrameClient::setWinHintsHint(long hints) {
     setProperty(_XA_WIN_HINTS, XA_CARDINAL, hints);
 }
 
-void YFrameClient::getClientLeader() {
-    Window leader = None;
-    if (prop.wm_client_leader) {
-        YProperty prop(this, _XA_WM_CLIENT_LEADER);
-        if (prop && prop.typed(XA_WINDOW))
-            leader = *prop;
-    }
-    fClientLeader = leader;
+void YFrameClient::getClientLeader() {   //hyjiang
+    // Window leader = None;
+    // if (prop.wm_client_leader) {
+    //     YProperty prop(this, _XA_WM_CLIENT_LEADER);
+    //     if (prop && prop.typed(XA_WINDOW))
+    //         leader = *prop;
+    // }
+    // fClientLeader = leader;
 }
 
 void YFrameClient::getWindowRole() {
@@ -1585,62 +1586,62 @@ bool YFrameClient::getNetWMDesktopHint(long *workspace) {
     return false;
 }
 
-void YFrameClient::getPropertiesList() {
-    int count;
-    Atom *p;
+void YFrameClient::getPropertiesList() {   //hyjiang
+//     int count;
+//     Atom *p;
 
-    memset(&prop, 0, sizeof(prop));
+//     memset(&prop, 0, sizeof(prop));
 
-    p = XListProperties(xapp->display(), handle(), &count);
+//     p = XListProperties(xapp->display(), handle(), &count);
 
-#define HAS(x)   ((x) = true)
+// #define HAS(x)   ((x) = true)
 
-    if (p) {
-        for (int i = 0; i < count; i++) {
-            Atom a = p[i];
+//     if (p) {
+//         for (int i = 0; i < count; i++) {
+//             Atom a = p[i];
 
-            if      (a == XA_WM_HINTS) HAS(prop.wm_hints);
-            else if (a == XA_WM_NORMAL_HINTS) HAS(prop.wm_normal_hints);
-            else if (a == XA_WM_TRANSIENT_FOR) HAS(prop.wm_transient_for);
-            else if (a == XA_WM_NAME) HAS(prop.wm_name);
-            else if (a == _XA_NET_WM_NAME) HAS(prop.net_wm_name);
-            else if (a == XA_WM_ICON_NAME) HAS(prop.wm_icon_name);
-            else if (a == _XA_NET_WM_ICON_NAME) HAS(prop.net_wm_icon_name);
-            else if (a == _XA_NET_WM_ICON) HAS(prop.net_wm_icon);
-            else if (a == XA_WM_CLASS) HAS(prop.wm_class);
-            else if (a == _XA_WM_PROTOCOLS) HAS(prop.wm_protocols);
-            else if (a == _XA_WM_CLIENT_LEADER) HAS(prop.wm_client_leader);
-            else if (a == _XA_WM_WINDOW_ROLE) HAS(prop.wm_window_role);
-            else if (a == _XA_WINDOW_ROLE) HAS(prop.window_role);
-            else if (a == _XA_SM_CLIENT_ID) HAS(prop.sm_client_id);
-            else if (a == _XATOM_MWM_HINTS) HAS(prop.mwm_hints);
-            else if (a == _XA_KWM_WIN_ICON) HAS(prop.kwm_win_icon);
-            else if (a == _XA_KDE_NET_WM_SYSTEM_TRAY_WINDOW_FOR) HAS(prop.kde_net_wm_system_tray_window_for);
-            else if (a == _XA_NET_WM_STRUT) HAS(prop.net_wm_strut);
-            else if (a == _XA_NET_WM_STRUT_PARTIAL) HAS(prop.net_wm_strut_partial);
-            else if (a == _XA_NET_WM_DESKTOP) HAS(prop.net_wm_desktop);
-            else if (a == _XA_NET_WM_PID) HAS(prop.net_wm_pid);
-            else if (a == _XA_NET_WM_STATE) HAS(prop.net_wm_state);
-            else if (a == _XA_NET_WM_WINDOW_TYPE) HAS(prop.net_wm_window_type);
-            else if (a == _XA_NET_STARTUP_ID) HAS(prop.net_startup_id);
-            else if (a == _XA_NET_WM_USER_TIME) HAS(prop.net_wm_user_time);
-            else if (a == _XA_NET_WM_USER_TIME_WINDOW) HAS(prop.net_wm_user_time_window);
-            else if (a == _XA_NET_WM_WINDOW_OPACITY) HAS(prop.net_wm_window_opacity);
-            else if (a == _XA_WIN_HINTS) HAS(prop.win_hints);
-            else if (a == _XA_WIN_WORKSPACE) HAS(prop.win_workspace);
-            else if (a == _XA_WIN_STATE) HAS(prop.win_state);
-            else if (a == _XA_WIN_LAYER) HAS(prop.win_layer);
-            else if (a == _XA_WIN_ICONS) HAS(prop.win_icons);
-            else if (a == _XA_XEMBED_INFO) HAS(prop.xembed_info);
-#ifdef DEBUG
-            else {
-                MSG(("unknown atom: %s", XGetAtomName(xapp->display(), a)));
-            }
-#endif
-#undef HAS
-        }
-        XFree(p);
-    }
+//             if      (a == XA_WM_HINTS) HAS(prop.wm_hints);
+//             else if (a == XA_WM_NORMAL_HINTS) HAS(prop.wm_normal_hints);
+//             else if (a == XA_WM_TRANSIENT_FOR) HAS(prop.wm_transient_for);
+//             else if (a == XA_WM_NAME) HAS(prop.wm_name);
+//             else if (a == _XA_NET_WM_NAME) HAS(prop.net_wm_name);
+//             else if (a == XA_WM_ICON_NAME) HAS(prop.wm_icon_name);
+//             else if (a == _XA_NET_WM_ICON_NAME) HAS(prop.net_wm_icon_name);
+//             else if (a == _XA_NET_WM_ICON) HAS(prop.net_wm_icon);
+//             else if (a == XA_WM_CLASS) HAS(prop.wm_class);
+//             else if (a == _XA_WM_PROTOCOLS) HAS(prop.wm_protocols);
+//             else if (a == _XA_WM_CLIENT_LEADER) HAS(prop.wm_client_leader);
+//             else if (a == _XA_WM_WINDOW_ROLE) HAS(prop.wm_window_role);
+//             else if (a == _XA_WINDOW_ROLE) HAS(prop.window_role);
+//             else if (a == _XA_SM_CLIENT_ID) HAS(prop.sm_client_id);
+//             else if (a == _XATOM_MWM_HINTS) HAS(prop.mwm_hints);
+//             else if (a == _XA_KWM_WIN_ICON) HAS(prop.kwm_win_icon);
+//             else if (a == _XA_KDE_NET_WM_SYSTEM_TRAY_WINDOW_FOR) HAS(prop.kde_net_wm_system_tray_window_for);
+//             else if (a == _XA_NET_WM_STRUT) HAS(prop.net_wm_strut);
+//             else if (a == _XA_NET_WM_STRUT_PARTIAL) HAS(prop.net_wm_strut_partial);
+//             else if (a == _XA_NET_WM_DESKTOP) HAS(prop.net_wm_desktop);
+//             else if (a == _XA_NET_WM_PID) HAS(prop.net_wm_pid);
+//             else if (a == _XA_NET_WM_STATE) HAS(prop.net_wm_state);
+//             else if (a == _XA_NET_WM_WINDOW_TYPE) HAS(prop.net_wm_window_type);
+//             else if (a == _XA_NET_STARTUP_ID) HAS(prop.net_startup_id);
+//             else if (a == _XA_NET_WM_USER_TIME) HAS(prop.net_wm_user_time);
+//             else if (a == _XA_NET_WM_USER_TIME_WINDOW) HAS(prop.net_wm_user_time_window);
+//             else if (a == _XA_NET_WM_WINDOW_OPACITY) HAS(prop.net_wm_window_opacity);
+//             else if (a == _XA_WIN_HINTS) HAS(prop.win_hints);
+//             else if (a == _XA_WIN_WORKSPACE) HAS(prop.win_workspace);
+//             else if (a == _XA_WIN_STATE) HAS(prop.win_state);
+//             else if (a == _XA_WIN_LAYER) HAS(prop.win_layer);
+//             else if (a == _XA_WIN_ICONS) HAS(prop.win_icons);
+//             else if (a == _XA_XEMBED_INFO) HAS(prop.xembed_info);
+// #ifdef DEBUG
+//             else {
+//                 MSG(("unknown atom: %s", XGetAtomName(xapp->display(), a)));
+//             }
+// #endif
+// #undef HAS
+//         }
+//         XFree(p);
+//     }
 }
 
 void YFrameClient::handleGravityNotify(const XGravityEvent &gravity) {

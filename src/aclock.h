@@ -33,6 +33,7 @@ private:
     virtual void updateToolTip();
     virtual bool handleTimer(YTimer *t);
     virtual bool picture();
+    virtual bool k_picture();
 
     enum {
         TimeSize = 64,
@@ -68,6 +69,10 @@ private:
     YColorName clockBg;
     YColorName clockFg;
     ref<YFont> clockFont;
+
+public:
+    friend gboolean time_handler(YClock *clock) ;
+
 };
 #endif
 

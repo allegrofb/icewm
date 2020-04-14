@@ -301,6 +301,10 @@ void Graphics::drawChars(const ustring &s, int x, int y) {
 void Graphics::drawChars(const char *data, int offset, int len, int x, int y) {
     // if (fFont != null)
     //     fFont->drawGlyphs(*this, x, y, data + offset, len);
+
+    cairo_move_to(k_gc, x, y);
+    cairo_show_text(k_gc, data);
+
 }
 
 void Graphics::drawString(int x, int y, char const * str) {
