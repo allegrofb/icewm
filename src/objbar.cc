@@ -117,6 +117,8 @@ void ObjectButton::actionPerformed(YAction action, unsigned modifiers) {
 }
 
 void ObjectButton::configure(const YRect2& r) {
+    MSG(("ObjectButton::configure %d %d", r.width(),r.height()));
+
     if (r.resized()) {
         repaint();
     }
@@ -130,8 +132,39 @@ void ObjectButton::paint(Graphics &g, const YRect &r) {
     YButton::paint(g, r);
 }
 
+
+static gboolean draw_cb(GtkWidget *widget, cairo_t *cr, void *data)
+{
+    cairo_surface_t* surface = (cairo_surface_t*)data;
+    MSG(("draw_cb: %p %p",
+        data,surface));    
+    if(surface == None) return TRUE;
+    MSG(("draw_cb: %d %d",
+        1,1));    
+    cairo_set_source_surface (cr, surface, 0, 0);
+    cairo_paint (cr);
+    return TRUE;
+}
+
+void ObjectButton::obinit() 
+{ 
+    fKPixmap = None;
+    g_signal_connect(getWidget(), "draw", G_CALLBACK(draw_cb), getKPixmap());
+    addStyle(wsNoExpose); 
+    setParentRelative(); 
+}
+
+cairo_surface_t* ObjectButton::getKPixmap()
+{
+    if (fKPixmap == None)
+        fKPixmap = createKPixmap();
+    return fKPixmap;
+}
+
 void ObjectButton::repaint() {
-    GraphicsBuffer(this).paint();
+    MSG(("ObjectButton::repaint"));
+    GraphicsBuffer(this,getKPixmap()).paint();
+    gtk_widget_queue_draw (getWidget());  
 }
 
 void ObjectButton::requestFocus(bool requestUserFocus) {

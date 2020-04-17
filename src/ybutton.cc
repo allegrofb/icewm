@@ -31,7 +31,8 @@ ref<YFont> YButton::normalButtonFont;
 ref<YFont> YButton::activeButtonFont;
 
 YButton::YButton(YWindow *parent, YAction action, YMenu *popup) :
-    YWindow(parent),
+    // YWindow(parent),
+    YWindow(1),
     fOver(false),
     fAction(action), fPopup(popup),
     fIcon(null),
@@ -65,21 +66,32 @@ YButton::~YButton() {
 }
 
 void YButton::paint(Graphics &g, int const d, const YRect &r) {
+    MSG(("YButton::paint 1"));
+
     int x = r.x(), y = r.y(), w = r.width(), h = r.height();
     YSurface surface(getSurface());
     g.drawSurface(surface, x, y, w, h);
 
     if (fIcon != null)
+    {
+        MSG(("YButton::paint 2"));
+
         fIcon->draw(g,
                     x + (w - fIconSize) / 2,
                     y + (h - fIconSize) / 2,
                     fIconSize);
+    }
     else
     if (fImage != null)
+    {
+        MSG(("YButton::paint 3"));
         g.drawImage(fImage,
                     x + (w - fImage->width()) / 2,
                     y + (h - fImage->height()) / 2);
+    }
     else if (fText != null) {
+        MSG(("YButton::paint 4"));
+
         ref<YFont> font = fPressed ? activeButtonFont : normalButtonFont;
 
         int const w(font->textWidth(fText));
@@ -103,6 +115,8 @@ void YButton::paint(Graphics &g, int const d, const YRect &r) {
 }
 
 void YButton::paint(Graphics &g, const YRect &/*r*/) {
+    MSG(("YButton::paint ** 1, %d %d", width(),height()));
+
     int d(fPressed || fArmed);
     int x(0), y(0), w(width()), h(height());
 
@@ -321,6 +335,7 @@ void YButton::handleCrossing(const XCrossingEvent &crossing) {
 }
 
 void YButton::updateSize() {
+    MSG(("YButton::updateSize 1"));
     int w = 72;
     int h = 18;
     if (fIcon != null) {
@@ -332,6 +347,7 @@ void YButton::updateSize() {
         w = activeButtonFont->textWidth(fText);
         h = activeButtonFont->ascent();
     }
+    MSG(("YButton::updateSize 2, %d %d", w,h));
     setSize(w + 3 + 2 - (wmLook == lookMetal || wmLook == lookFlat),
             h + 3 + 2 - (wmLook == lookMetal || wmLook == lookFlat));
 }
@@ -345,9 +361,13 @@ void YButton::setIcon(ref<YIcon> icon, int iconSize) {
 }
 
 void YButton::setImage(ref<YImage> image) {
+    MSG(("YButton::setImage, %d %d", image->width(),image->height()));
+
     fImage = image;
     fIconSize = 0;
     fIcon = null;
+
+    MSG(("YButton::setImage"));
 
     updateSize();
 }

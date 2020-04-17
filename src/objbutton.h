@@ -39,7 +39,9 @@ public:
     virtual YSurface getSurface();
 
 private:
-    void obinit() { addStyle(wsNoExpose); setParentRelative(); }
+    void obinit();// { addStyle(wsNoExpose); setParentRelative(); }
+    cairo_surface_t* fKPixmap;
+    cairo_surface_t* getKPixmap();
 
     osmart<DObject> fObject;
     osmart<LazyMenu> fMenu;

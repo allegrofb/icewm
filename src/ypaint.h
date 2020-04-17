@@ -227,13 +227,7 @@ private:
 
 class GraphicsBuffer {
 public:
-    GraphicsBuffer(YWindow* ywindow) :
-        fWindow(ywindow),
-        fNesting(0),
-        fPixmap(None),
-        fDim(0, 0)
-    {
-    }
+    GraphicsBuffer(YWindow* ywindow, cairo_surface_t* fKPixmap=0);
     ~GraphicsBuffer();
     void paint(const class YRect& rect);
     void paint();
@@ -247,10 +241,12 @@ private:
     YWindow* fWindow;
     int fNesting;
     Pixmap fPixmap;
+    cairo_surface_t* fKPixmap;
     YDimension fDim;
 
     Pixmap pixmap();
     void paint(Pixmap p, const class YRect& rect);
+    void paint(cairo_surface_t* p, const class YRect& rect);
 };
 
 #endif

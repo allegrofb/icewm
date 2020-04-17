@@ -2185,7 +2185,34 @@ void ClockView()
 }
 
 
+#include "objbutton.h"
+#include "wmaction.h"
 
+void ObjectButtonView()
+{
+    WPixRes::initPixmaps();
+
+    GtkWidget *window;
+    GtkWidget *clock;
+
+    window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
+
+    debug = 1;
+
+    ObjectButton *fShowDesktop = new ObjectButton(NULL, actionShowDesktop);
+    MSG(("1111111, %d %d", taskbarShowDesktopImage->width(), taskbarShowDesktopImage->height()));
+    //    fShowDesktop->setText("__");
+    // fShowDesktop->setImage(taskbarShowDesktopImage);
+    // fShowDesktop->setImage(taskbarStartImage);
+    fShowDesktop->setImage(taskbarWindowsImage);
+    //    fShowDesktop->setToolTip(_("Show Desktop"));
+    fShowDesktop->setTitle("ShowDesktop");
+
+    clock = fShowDesktop->getWidget();
+    gtk_container_add(GTK_CONTAINER(window), clock);
+    gtk_widget_show_all(window);
+}
 
 int main(int argc, char *argv[]) {
 
@@ -2275,7 +2302,8 @@ int main(int argc, char *argv[]) {
     // iconView();
     // mycpu();
     // CPUStatusView();
-    ClockView();
+    // ClockView();
+    ObjectButtonView();
     gtk_main();
 
     return 0;

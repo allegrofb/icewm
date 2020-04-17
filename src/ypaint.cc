@@ -587,6 +587,15 @@ void Graphics::drawImage(ref<YImage> img, int const x, int const y) {
 }
 
 void Graphics::drawImage(ref<YImage> img, int x, int y, unsigned w, unsigned h, int dx, int dy) {
+    MSG(("Graphics::drawImage"));
+
+    GdkPixbuf* buf = (GdkPixbuf*)(img->getPtr());
+
+    cairo_surface_t* src = 
+    gdk_cairo_surface_create_from_pixbuf (buf,1,NULL);
+    cairo_set_source_surface(k_gc, src, x - xOrigin, y - yOrigin);
+    cairo_paint(k_gc);
+
 
     // if (picture()) {
     //     unsigned depth = max(img->depth(), rdepth());
@@ -1016,16 +1025,17 @@ void Graphics::fillPixmap(ref<YPixmap> pixmap, int x, int y,
 
 void Graphics::drawSurface(YSurface const & surface, int x, int y, unsigned w, unsigned h,
                            int const sx, int const sy,
-                           const unsigned sw, const unsigned sh
-) {
-        return;
-
+                           const unsigned sw, const unsigned sh) 
+{
+    MSG(("Graphics::drawSurface, %d %d %d", surface.gradient != null,
+                                            surface.pixmap != null,
+                                            surface.color));
     if (surface.gradient != null)
         drawGradient(surface.gradient, x, y, w, h, sx, sy, sw, sh);
-    else
-    if (surface.pixmap != null)
+    else if (surface.pixmap != null)
         fillPixmap(surface.pixmap, x, y, w, h, sx, sy);
-    else if (surface.color) {
+    else if (surface.color) 
+    {
         setColor(surface.color);
         fillRect(x, y, w, h);
     }
@@ -1198,6 +1208,16 @@ void Graphics::resetClip() {
 
 /******************************************************************************/
 
+
+GraphicsBuffer::GraphicsBuffer(YWindow *ywindow, cairo_surface_t* fKPixmap) : fWindow(ywindow),
+                                                   fNesting(0),
+                                                   fPixmap(None),
+                                                   fKPixmap(fKPixmap),
+                                                   fDim(0, 0)
+{
+    MSG((_("GraphicsBuffer::GraphicsBuffer: %p"), fKPixmap));        
+}
+
 void GraphicsBuffer::paint(Pixmap pixmap, const YRect& rect) {
     if (window()->handle() && window()->destroyed())
         return;
@@ -1239,6 +1259,59 @@ void GraphicsBuffer::paint(Pixmap pixmap, const YRect& rect) {
     }
 
     fNesting -= 1;
+
+}
+
+
+void GraphicsBuffer::paint(cairo_surface_t* pixmap, const YRect& rect) {
+    MSG(("GraphicsBuffer::paint(cairo_surface_t* pixmap, const YRect& rect) %p", pixmap));
+
+    if (window()->getWidget() && window()->destroyed())
+        return;
+
+    const bool clipping = false;
+    const int x(rect.x());
+    const int y(rect.y());
+    const unsigned w(rect.width());
+    const unsigned h(rect.height());
+    const unsigned depth(window()->depth());
+
+    MSG(("GraphicsBuffer::paint 1, %d %d %d %d",x,y,w,h));
+
+    if (x < 0 || y < 0 || int(w) <= 0 || int(h) <= 0 || pixmap == None) {
+        return;
+    }
+
+    fNesting += 1;
+
+    Graphics gfx(pixmap, w, h, depth);
+
+    // if (clipping && fNesting == 1) {
+    //     if (x || y || w < window()->width() || h < window()->height()) {
+    //         XRectangle clip = { short(x), short(y),
+    //                            (unsigned short)w, (unsigned short)h };
+    //         gfx.setClipRectangles(&clip, 1);
+    //     }
+    // }
+
+    if (fNesting == 1) {
+        gfx.clearArea(x, y, w, h);
+    }
+
+    MSG(("GraphicsBuffer::paint 2, %p", fKPixmap));
+
+    window()->paint(gfx, rect);
+
+    if (pixmap == fKPixmap && fNesting == 1) {
+        if ( !window()->destroyed()) {
+            // window()->setBackgroundPixmap(pixmap);
+            window()->clearArea(x, y, w, h);
+        }
+    }
+
+    fNesting -= 1;
+
+    MSG(("GraphicsBuffer::paint 3, %p",fKPixmap));
 }
 
 void GraphicsBuffer::release() {
@@ -1254,11 +1327,13 @@ GraphicsBuffer::~GraphicsBuffer() {
 
 void GraphicsBuffer::paint(const YRect& rect) {
     if (0 < window()->width() && 0 < window()->height()) {
-        GraphicsBuffer::paint(pixmap(), rect);
+        GraphicsBuffer::paint(fKPixmap, rect);
     }
 }
 
 void GraphicsBuffer::paint() {
+    MSG(("GraphicsBuffer::paint()"));
+
     YRect rect(0, 0, window()->width(), window()->height());
     paint(rect);
 }

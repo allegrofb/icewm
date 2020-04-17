@@ -224,7 +224,7 @@ void YWindow::setWindowFocus() {
 }
 
 void YWindow::setTitle(char const * title) {
-    XStoreName(xapp->display(), handle(), title);
+    // XStoreName(xapp->display(), handle(), title);
 }
 
 bool YWindow::fetchTitle(char** title) {
@@ -240,39 +240,41 @@ void YWindow::setClassHint(char const * rName, char const * rClass) {
 }
 
 void YWindow::setStyle(unsigned aStyle) {
+    MSG(("YWindow::setStyle"));
+    
     if (fStyle != aStyle) {
         fStyle = aStyle;
 
-        if (flags & wfCreated) {
-            if (fStyle & wsToolTip)
-                fEventMask = ExposureMask;
+        // if (flags & wfCreated) {
+        //     if (fStyle & wsToolTip)
+        //         fEventMask = ExposureMask;
 
-            if (fStyle & wsPointerMotion)
-                fEventMask |= PointerMotionMask;
+        //     if (fStyle & wsPointerMotion)
+        //         fEventMask |= PointerMotionMask;
 
 
-            if (hasbit(fStyle, wsDesktopAware | wsManager) ||
-                (fHandle != xapp->root()))
-                fEventMask |=
-                    StructureNotifyMask |
-                    ColormapChangeMask |
-                    PropertyChangeMask;
+        //     // if (hasbit(fStyle, wsDesktopAware | wsManager) ||
+        //         // (fHandle != xapp->root()))
+        //         // fEventMask |=
+        //         //     StructureNotifyMask |
+        //         //     ColormapChangeMask |
+        //         //     PropertyChangeMask;
 
-            if (fStyle & wsManager)
-                fEventMask |=
-                    FocusChangeMask |
-                    SubstructureRedirectMask | SubstructureNotifyMask;
+        //     if (fStyle & wsManager)
+        //         fEventMask |=
+        //             FocusChangeMask |
+        //             SubstructureRedirectMask | SubstructureNotifyMask;
 
-            fEventMask |= ButtonPressMask | ButtonReleaseMask | ButtonMotionMask;
-            if (fHandle == xapp->root())
-                if (!(fStyle & wsManager) || !grabRootWindow)
-                    fEventMask &= ~(ButtonPressMask | ButtonReleaseMask | ButtonMotionMask);
+        //     fEventMask |= ButtonPressMask | ButtonReleaseMask | ButtonMotionMask;
+        //     // if (fHandle == xapp->root())
+        //     //     if (!(fStyle & wsManager) || !grabRootWindow)
+        //     //         fEventMask &= ~(ButtonPressMask | ButtonReleaseMask | ButtonMotionMask);
 
-            if (fStyle & wsNoExpose)
-                fEventMask &= ~ExposureMask;
+        //     if (fStyle & wsNoExpose)
+        //         fEventMask &= ~ExposureMask;
 
-            XSelectInput(xapp->display(), fHandle, fEventMask);
-        }
+        //     // XSelectInput(xapp->display(), fHandle, fEventMask);
+        // }
     }
 }
 
@@ -1195,15 +1197,18 @@ void YWindow::setPosition(int x, int y) {
 }
 
 void YWindow::setSize(unsigned width, unsigned height) {
+    MSG(("YWindow::setSize 1, %d %d", width,height));    
     if (width != fWidth || height != fHeight) {
         YRect old(geometry());
 
         fWidth = width;
         fHeight = height;
 
-        if (flags & wfCreated)
-            if (!nullGeometry())
-                XResizeWindow(xapp->display(), fHandle, fWidth, fHeight);
+        MSG(("YWindow::setSize 2, %d %d %d %d", old.x(),old.y(),old.width(),old.height()));    
+
+        // if (flags & wfCreated)
+            // if (!nullGeometry())
+            //     XResizeWindow(xapp->display(), fHandle, fWidth, fHeight);   //hyjiang
 
         configure(YRect2(geometry(), old));
     }
@@ -1218,7 +1223,7 @@ void YWindow::setBackground(unsigned long pixel) {
 }
 
 void YWindow::setBackgroundPixmap(Pixmap pixmap) {
-    XSetWindowBackgroundPixmap(xapp->display(), handle(), pixmap);
+    // XSetWindowBackgroundPixmap(xapp->display(), handle(), pixmap);
 }
 
 void YWindow::setBackgroundKPixmap(cairo_surface_t* pixmap) {
@@ -1227,10 +1232,11 @@ void YWindow::setBackgroundKPixmap(cairo_surface_t* pixmap) {
 }
 
 void YWindow::setBackgroundPixmap(ref<YPixmap> pixmap) {
-    setBackgroundPixmap(pixmap->pixmap(depth()));
+    // setBackgroundPixmap(pixmap->pixmap(depth()));
 }
 
 void YWindow::setParentRelative() {
+    MSG(("YWindow::setParentRelative"));
     setBackgroundPixmap(ParentRelative);
 }
 
@@ -1256,10 +1262,12 @@ void YWindow::mapToLocal(int& x, int& y) {
 
 void YWindow::configure(const YRect &/*r*/)
 {
+    MSG(("YWindow::configure YRect"));
 }
 
 void YWindow::configure(const YRect2& r2)
 {
+    MSG(("YWindow::configure %d %d %d %d", r2.x(),r2.y(),r2.width(),r2.height()));    
     configure((const YRect &) r2);
 }
 
