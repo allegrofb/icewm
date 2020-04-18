@@ -9,12 +9,11 @@ Picturer::~Picturer()
 {
 }
 
-static gboolean draw_cb(GtkWidget *widget, cairo_t *cr, void *data)
+gboolean IApplet::draw_cb(GtkWidget *widget, cairo_t *cr, void *data)
 {
-    MSG((_("draw_cb: %d %d"),
-        0,0));    
-    cairo_surface_t* surface = (cairo_surface_t*)data;
-    cairo_set_source_surface (cr, surface, 0, 0);
+    MSG(("IApplet::draw_cb"));    
+    IApplet* app = (IApplet*)data;
+    cairo_set_source_surface (cr, app->fKPixmap, 0, 0);
     cairo_paint (cr);
     return TRUE;
 }
@@ -23,11 +22,12 @@ IApplet::IApplet(Picturer *picturer, YWindow *parent) :
     YWindow(1),
     isVisible(false),
     fPicturer(picturer),
+    fKPixmap(None),
     fPixmap(None)
 {
     addStyle(wsNoExpose);
     addEventMask(VisibilityChangeMask);
-    g_signal_connect(getWidget(), "draw", G_CALLBACK(draw_cb), getKPixmap());
+    g_signal_connect(getWidget(), "draw", G_CALLBACK(draw_cb), this);
 }
 
 IApplet::~IApplet()
@@ -76,24 +76,36 @@ Drawable IApplet::getPixmap()
     return fPixmap;
 }
 
-cairo_surface_t* IApplet::getKPixmap()
+cairo_surface_t* IApplet::getKPixmap(unsigned int width, unsigned int height)
 {
+    static unsigned int w,h;
+
     if (fKPixmap == None)
-        fKPixmap = createKPixmap();
+    {
+        fKPixmap = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);         
+        w = width;
+        h = height;
+    }
+    else if(w != width || h != height)
+    {
+        cairo_surface_destroy(fKPixmap);
+        fKPixmap = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);         
+        w = width;
+        h = height;
+    }
+
     return fKPixmap;
 }
 
 void IApplet::showPixmap() {
     MSG(("IApplet::showPixmap"));
 
-    Graphics g(fKPixmap, width(), height(), depth());
+    Graphics g(getKPixmap(width(), height()), width(), height(), depth());
     // Graphics g(fPixmap, width(), height(), depth());
     paint(g, YRect(0, 0, width(), height()));
     gtk_widget_queue_draw (getWidget());     //hyjiang
     // setBackgroundPixmap(fPixmap);
     // clearWindow();
-
-
 }
 
 void IApplet::configure(const YRect2& r) {

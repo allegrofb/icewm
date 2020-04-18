@@ -30,6 +30,7 @@ WorkspaceButton::WorkspaceButton(int ws, YWindow *parent, WorkspaceDragger* d):
     fGraphics(this),
     fPane(d)
 {
+    MSG(("WorkspaceButton::WorkspaceButton"));
     addStyle(wsNoExpose);
     setParentRelative();
     //setDND(true);
@@ -357,17 +358,30 @@ void WorkspacesPane::relabelButtons() {
 }
 
 void WorkspacesPane::configure(const YRect2& r) {
+    MSG(("WorkspacesPane::configure 1, %d %d", fReconfiguring, fRepositioning));
+
     if ((fReconfiguring | fRepositioning) == false && r.resized()) {
         fReconfiguring = true;
+        MSG(("WorkspacesPane::configure 2"));
         if (count() == 0) {
+        MSG(("WorkspacesPane::configure 3"));
+
             unsigned width = 0, height = max(smallIconSize + 8, r.height());
-            for (int i = 0, n = workspaceCount; i < n; ++i)
+        MSG(("WorkspacesPane::configure 3 ####"));
+
+            for (int i = 0, n = workspaceCount; i < n; ++i)    //<----- Workspaces global variable
+            {
+        MSG(("WorkspacesPane::configure 3 1111"));                
                 width += create(i, height)->width();
+            }
             resize(width, height);
+        MSG(("WorkspacesPane::configure 3 2222"));
+
             setPressed(manager->activeWorkspace(), true);
             paths = null;
         }
         else {
+        MSG(("WorkspacesPane::configure 4"));
             repositionButtons();
         }
         fReconfiguring = false;
@@ -400,6 +414,7 @@ void WorkspacesPane::updateButtons() {
 }
 
 WorkspaceButton* WorkspacesPane::create(int workspace, unsigned height) {
+    MSG(("WorkspacesPane::create 1"));    
     WorkspaceButton *wk = new WorkspaceButton(workspace, this, this);
     fButtons += wk;
     if (pagerShowPreview) {

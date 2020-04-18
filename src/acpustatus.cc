@@ -140,7 +140,7 @@ bool CPUStatus::k_picture() {
 
     bool create = (hasKPixmap() == false);
 
-    Graphics G(getKPixmap(), width(), height(), depth());
+    Graphics G(getKPixmap(width(), height()), width(), height(), depth());
 
     MSG((_("CPUStatus::k_picture %d\n"),
         2));

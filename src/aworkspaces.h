@@ -87,7 +87,8 @@ class WorkspaceIcons {
 
 class AWorkspaces : public YWindow {
 public:
-    AWorkspaces(YWindow *parent) : YWindow(parent) {
+    // AWorkspaces(YWindow *parent) : YWindow(parent) {
+    AWorkspaces(YWindow *parent) : YWindow(1) {        
         addStyle(wsNoExpose);
         setParentRelative();
     }
@@ -132,7 +133,7 @@ private:
     lazy<YTimer> fRepaintTimer;
     lazy<WorkspaceIcons> paths;
     ArrayType fButtons;
-    int count() const { return fButtons.getCount(); }
+    int count() const { printf("***************\n");return fButtons.getCount(); }
     IterType iterator() { return fButtons.iterator(); }
     WorkspaceButton* last() const { return fButtons[count()-1]; }
     int extent() const { return 0 < count() ? last()->extent() : 0; }

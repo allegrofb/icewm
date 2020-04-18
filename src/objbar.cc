@@ -133,14 +133,13 @@ void ObjectButton::paint(Graphics &g, const YRect &r) {
 }
 
 
-static gboolean draw_cb(GtkWidget *widget, cairo_t *cr, void *data)
+gboolean ObjectButton::draw_cb(GtkWidget *widget, cairo_t *cr, void *data)
 {
-    cairo_surface_t* surface = (cairo_surface_t*)data;
-    MSG(("draw_cb: %p %p",
-        data,surface));    
+    ObjectButton* button = (ObjectButton*)data;
+    cairo_surface_t* surface = button->fKPixmap;
+    MSG(("ObjectButton::draw_cb 1"));    
     if(surface == None) return TRUE;
-    MSG(("draw_cb: %d %d",
-        1,1));    
+    MSG(("ObjectButton::draw_cb 2"));    
     cairo_set_source_surface (cr, surface, 0, 0);
     cairo_paint (cr);
     return TRUE;
@@ -149,21 +148,35 @@ static gboolean draw_cb(GtkWidget *widget, cairo_t *cr, void *data)
 void ObjectButton::obinit() 
 { 
     fKPixmap = None;
-    g_signal_connect(getWidget(), "draw", G_CALLBACK(draw_cb), getKPixmap());
+    g_signal_connect(getWidget(), "draw", G_CALLBACK(draw_cb), this);
     addStyle(wsNoExpose); 
     setParentRelative(); 
 }
 
-cairo_surface_t* ObjectButton::getKPixmap()
+cairo_surface_t* ObjectButton::getKPixmap(unsigned int width, unsigned int height)
 {
+    static unsigned int w,h;
+
     if (fKPixmap == None)
-        fKPixmap = createKPixmap();
+    {
+        fKPixmap = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);         
+        w = width;
+        h = height;
+    }
+    else if(w != width || h != height)
+    {
+        cairo_surface_destroy(fKPixmap);
+        fKPixmap = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);         
+        w = width;
+        h = height;
+    }
+
     return fKPixmap;
 }
 
 void ObjectButton::repaint() {
     MSG(("ObjectButton::repaint"));
-    GraphicsBuffer(this,getKPixmap()).paint();
+    GraphicsBuffer(this,getKPixmap(width(),height())).paint();
     gtk_widget_queue_draw (getWidget());  
 }
 

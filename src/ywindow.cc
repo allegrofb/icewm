@@ -1208,7 +1208,7 @@ void YWindow::setSize(unsigned width, unsigned height) {
 
         // if (flags & wfCreated)
             // if (!nullGeometry())
-            //     XResizeWindow(xapp->display(), fHandle, fWidth, fHeight);   //hyjiang
+            //     XResizeWindow(xapp->display(), fHandle, fWidth, fHeight);   //hyjiang, send configure event
 
         configure(YRect2(geometry(), old));
     }
@@ -1223,15 +1223,16 @@ void YWindow::setBackground(unsigned long pixel) {
 }
 
 void YWindow::setBackgroundPixmap(Pixmap pixmap) {
+    MSG(("YWindow::setBackgroundPixmap(Pixmap pixmap)"));
     // XSetWindowBackgroundPixmap(xapp->display(), handle(), pixmap);
 }
 
 void YWindow::setBackgroundKPixmap(cairo_surface_t* pixmap) {
     // XSetWindowBackgroundPixmap(xapp->display(), handle(), pixmap);
-
 }
 
 void YWindow::setBackgroundPixmap(ref<YPixmap> pixmap) {
+    MSG(("YWindow::setBackgroundPixmap(ref<YPixmap> pixmap)"));
     // setBackgroundPixmap(pixmap->pixmap(depth()));
 }
 
@@ -2050,11 +2051,7 @@ Pixmap YWindow::createPixmap() {
 }
 
 cairo_surface_t* YWindow::createKPixmap() {
-    fWidth = 150; //hyjiang
-    fHeight = 20;
-    MSG(("YWindow::createKPixmap %d %d\n",
-            fWidth, fHeight));
-
+    MSG(("YWindow::createKPixmap %d %d", fWidth, fHeight));
     return cairo_image_surface_create(CAIRO_FORMAT_ARGB32, fWidth, fHeight); 
 }
 

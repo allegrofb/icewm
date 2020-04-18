@@ -249,7 +249,7 @@ bool YClock::k_picture() {
     MSG((_("YClock::k_picture %d\n"),
         1));
 
-    Graphics G(getKPixmap(), width(), height(), depth());
+    Graphics G(getKPixmap(width(), height()), width(), height(), depth());
 
     MSG((_("YClock::k_picture %d\n"),
         2));

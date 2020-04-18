@@ -2179,6 +2179,7 @@ void ClockView()
    debug = 1;
 
    YClock* status = new YClock(NULL, NULL, NULL);
+   status->setSize(40,40);
    clock = status->getWidget();
    gtk_container_add(GTK_CONTAINER(window), clock);
    gtk_widget_show_all(window);
@@ -2210,6 +2211,25 @@ void ObjectButtonView()
     fShowDesktop->setTitle("ShowDesktop");
 
     clock = fShowDesktop->getWidget();
+    gtk_container_add(GTK_CONTAINER(window), clock);
+    gtk_widget_show_all(window);
+}
+
+#include "aworkspaces.h"
+
+void WorkspacePaneView()
+{
+    GtkWidget *window;
+    GtkWidget *clock;
+
+    window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
+
+    debug = 1;
+
+    WorkspacesPane *wsp = new WorkspacesPane(NULL);
+    // wsp->setSize(400,50);
+    clock = wsp->getWidget();
     gtk_container_add(GTK_CONTAINER(window), clock);
     gtk_widget_show_all(window);
 }
@@ -2303,7 +2323,8 @@ int main(int argc, char *argv[]) {
     // mycpu();
     // CPUStatusView();
     // ClockView();
-    ObjectButtonView();
+    // ObjectButtonView();
+    WorkspacePaneView();
     gtk_main();
 
     return 0;

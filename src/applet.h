@@ -35,7 +35,7 @@ protected:
     bool hasPixmap() const { return fPixmap != None; }
 
     void freeKPixmap();
-    cairo_surface_t* getKPixmap();
+    cairo_surface_t* getKPixmap(unsigned int width, unsigned int height);
     bool hasKPixmap() const { return fKPixmap != None; }
 
     bool isVisible;
@@ -47,6 +47,8 @@ private:
     Picturer* fPicturer;
     Drawable fPixmap;
     cairo_surface_t* fKPixmap;
+
+    static gboolean draw_cb(GtkWidget *widget, cairo_t *cr, void *data);
 };
 
 extern YColorName taskBarBg;
