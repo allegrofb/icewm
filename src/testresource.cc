@@ -2052,7 +2052,7 @@ GtkTreeModel * init_model(void) {
         "inkscape", COL_PIXBUF, p4, -1);
   }
 
-  WPixRes::initPixmaps();
+//   WPixRes::initPixmaps();
 
   gtk_list_store_append(list_store, &iter);
   gtk_list_store_set(list_store, &iter, COL_DISPLAY_NAME,
@@ -2191,7 +2191,7 @@ void ClockView()
 
 void ObjectButtonView()
 {
-    WPixRes::initPixmaps();
+    // WPixRes::initPixmaps();
 
     GtkWidget *window;
     GtkWidget *clock;
@@ -2228,7 +2228,8 @@ void WorkspacePaneView()
     debug = 1;
 
     WorkspacesPane *wsp = new WorkspacesPane(NULL);
-    // wsp->setSize(400,50);
+    wsp->setSize(400,50);
+    // wsp->resize(400,50);
     clock = wsp->getWidget();
     gtk_container_add(GTK_CONTAINER(window), clock);
     gtk_widget_show_all(window);
@@ -2317,7 +2318,17 @@ int main(int argc, char *argv[]) {
     //             notify_parent, splashFile,
     //             configFile, overrideTheme);
 
+    manager = new YWindowManager(
+        NULL, NULL, NULL, nullptr, 0);
+
+    manager->initWorkspaces();
+    // manager->grabKeys();
+    // manager->setupRootProxy();
+
     gtk_init(&argc, &argv);
+
+    WPixRes::initPixmaps();
+
 
     // iconView();
     // mycpu();

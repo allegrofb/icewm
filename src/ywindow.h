@@ -266,9 +266,12 @@ public :
     YWindow(int widget);
     GtkWidget *getWidget() { return fWidget; }
 
+    cairo_surface_t* fKPixmap;
+    cairo_surface_t* getKPixmap(unsigned int width, unsigned int height);
+
 private:
     GtkWidget *fWidget;
-    GtkWidget *createWidget();
+    GtkWidget *createWidget(int flag);
     void destroyWidget();
 
 private:

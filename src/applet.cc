@@ -22,7 +22,6 @@ IApplet::IApplet(Picturer *picturer, YWindow *parent) :
     YWindow(1),
     isVisible(false),
     fPicturer(picturer),
-    fKPixmap(None),
     fPixmap(None)
 {
     addStyle(wsNoExpose);
@@ -74,27 +73,6 @@ Drawable IApplet::getPixmap()
     if (fPixmap == None)
         fPixmap = createPixmap();
     return fPixmap;
-}
-
-cairo_surface_t* IApplet::getKPixmap(unsigned int width, unsigned int height)
-{
-    static unsigned int w,h;
-
-    if (fKPixmap == None)
-    {
-        fKPixmap = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);         
-        w = width;
-        h = height;
-    }
-    else if(w != width || h != height)
-    {
-        cairo_surface_destroy(fKPixmap);
-        fKPixmap = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);         
-        w = width;
-        h = height;
-    }
-
-    return fKPixmap;
 }
 
 void IApplet::showPixmap() {

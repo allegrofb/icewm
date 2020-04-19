@@ -153,27 +153,6 @@ void ObjectButton::obinit()
     setParentRelative(); 
 }
 
-cairo_surface_t* ObjectButton::getKPixmap(unsigned int width, unsigned int height)
-{
-    static unsigned int w,h;
-
-    if (fKPixmap == None)
-    {
-        fKPixmap = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);         
-        w = width;
-        h = height;
-    }
-    else if(w != width || h != height)
-    {
-        cairo_surface_destroy(fKPixmap);
-        fKPixmap = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);         
-        w = width;
-        h = height;
-    }
-
-    return fKPixmap;
-}
-
 void ObjectButton::repaint() {
     MSG(("ObjectButton::repaint"));
     GraphicsBuffer(this,getKPixmap(width(),height())).paint();

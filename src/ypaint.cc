@@ -1215,7 +1215,7 @@ GraphicsBuffer::GraphicsBuffer(YWindow *ywindow, cairo_surface_t* fKPixmap) : fW
                                                    fKPixmap(fKPixmap),
                                                    fDim(0, 0)
 {
-    MSG((_("GraphicsBuffer::GraphicsBuffer: %p"), fKPixmap));        
+    MSG(("GraphicsBuffer::GraphicsBuffer: %p", fKPixmap));        
 }
 
 void GraphicsBuffer::paint(Pixmap pixmap, const YRect& rect) {

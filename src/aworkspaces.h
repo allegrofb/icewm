@@ -32,6 +32,9 @@ public:
     int extent() const { return x() + int(width()); }
     virtual void repaint();
 
+public:
+    static gboolean draw_cb(GtkWidget *widget, cairo_t *cr, void *data);
+
 private:
     virtual void handleButton(const XButtonEvent &button);
     virtual void handleClick(const XButtonEvent &up, int count);
@@ -88,7 +91,7 @@ class WorkspaceIcons {
 class AWorkspaces : public YWindow {
 public:
     // AWorkspaces(YWindow *parent) : YWindow(parent) {
-    AWorkspaces(YWindow *parent) : YWindow(1) {        
+    AWorkspaces(YWindow *parent) : YWindow(2) {        
         addStyle(wsNoExpose);
         setParentRelative();
     }
@@ -133,7 +136,7 @@ private:
     lazy<YTimer> fRepaintTimer;
     lazy<WorkspaceIcons> paths;
     ArrayType fButtons;
-    int count() const { printf("***************\n");return fButtons.getCount(); }
+    int count() const { return fButtons.getCount(); }
     IterType iterator() { return fButtons.iterator(); }
     WorkspaceButton* last() const { return fButtons[count()-1]; }
     int extent() const { return 0 < count() ? last()->extent() : 0; }

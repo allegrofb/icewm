@@ -162,9 +162,10 @@ YWindow::YWindow(int widget):
     fEnabled(true), fToplevel(false),
     fDoubleBuffer(doubleBuffer),
     accel(0),
+    fKPixmap(0),
     fDND(false), XdndDragSource(None), XdndDropTarget(None)
 {
-    createWidget();
+    createWidget(widget);
 }
 
 YWindow::~YWindow() {
@@ -469,7 +470,7 @@ Window YWindow::create() {
 }
 
 
-GtkWidget* YWindow::createWidget() {
+GtkWidget* YWindow::createWidget(int flag) {
     if (flags & wfCreated) return fWidget;
 
     if (fWidget == None) {
@@ -482,7 +483,13 @@ GtkWidget* YWindow::createWidget() {
             flags |= wfNullSize;
         }
 
-        fWidget = my_widget_new();
+        if(flag == 1)
+            fWidget = my_widget_new();
+            // fWidget = gtk_widget_new(GTK_TYPE_WINDOW,"type", GTK_WINDOW_TOPLEVEL,NULL);
+            
+        else
+            // fWidget = gtk_widget_new(GTK_TYPE_WINDOW,"type", GTK_WINDOW_TOPLEVEL,NULL);
+            fWidget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 1);
 
         // fHandle = XCreateWindow(xapp->display(),
         //                         parent()->handle(),
@@ -604,7 +611,9 @@ void YWindow::show() {
     if (!(flags & (wfVisible | wfDestroyed))) {
         flags |= wfVisible;
         if (!(flags & wfNullSize))
-            XMapWindow(xapp->display(), handle());
+        {
+            // XMapWindow(xapp->display(), handle());
+        }
     }
 }
 
@@ -613,7 +622,7 @@ void YWindow::hide() {
         flags &= unsigned(~wfVisible);
         if (!(flags & (wfNullSize | wfDestroyed))) {
             addIgnoreUnmap(handle());
-            XUnmapWindow(xapp->display(), handle());
+            // XUnmapWindow(xapp->display(), handle());
         }
     }
 }
@@ -1212,6 +1221,27 @@ void YWindow::setSize(unsigned width, unsigned height) {
 
         configure(YRect2(geometry(), old));
     }
+}
+
+cairo_surface_t* YWindow::getKPixmap(unsigned int width, unsigned int height)
+{
+    static unsigned int w,h;
+
+    if (fKPixmap == None)
+    {
+        fKPixmap = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);         
+        w = width;
+        h = height;
+    }
+    else if(w != width || h != height)
+    {
+        cairo_surface_destroy(fKPixmap);
+        fKPixmap = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);         
+        w = width;
+        h = height;
+    }
+
+    return fKPixmap;
 }
 
 void YWindow::setBorderWidth(unsigned width) {

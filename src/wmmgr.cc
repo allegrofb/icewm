@@ -2500,9 +2500,9 @@ void YWindowManager::setDesktopGeometry() {
     data[0] = desktop->width();
     data[1] = desktop->height();
     MSG(("setting: _NET_DESKTOP_GEOMETRY = (%ld,%ld)", data[0], data[1]));
-    XChangeProperty(xapp->display(), handle(),
-                    _XA_NET_DESKTOP_GEOMETRY, XA_CARDINAL, 32,
-                    PropModeReplace, (unsigned char *)&data, 2);
+    // XChangeProperty(xapp->display(), handle(),
+    //                 _XA_NET_DESKTOP_GEOMETRY, XA_CARDINAL, 32,
+    //                 PropModeReplace, (unsigned char *)&data, 2);
 }
 
 void YWindowManager::setShowingDesktop() {
@@ -2725,13 +2725,13 @@ void YWindowManager::setDesktopNames() {
 void YWindowManager::setDesktopCount() {
     long count = workspaceCount();
     MSG(("setting: _WIN_WORKSPACE_COUNT = %ld",count));
-    XChangeProperty(xapp->display(), handle(),
-                    _XA_WIN_WORKSPACE_COUNT, XA_CARDINAL,
-                    32, PropModeReplace, (unsigned char *)&count, 1);
+    // XChangeProperty(xapp->display(), handle(),
+    //                 _XA_WIN_WORKSPACE_COUNT, XA_CARDINAL,
+    //                 32, PropModeReplace, (unsigned char *)&count, 1);
     MSG(("setting: _NET_NUMBER_OF_DESKTOPS = %ld",count));
-    XChangeProperty(xapp->display(), handle(),
-                    _XA_NET_NUMBER_OF_DESKTOPS, XA_CARDINAL,
-                    32, PropModeReplace, (unsigned char *)&count, 1);
+    // XChangeProperty(xapp->display(), handle(),
+    //                 _XA_NET_NUMBER_OF_DESKTOPS, XA_CARDINAL,
+    //                 32, PropModeReplace, (unsigned char *)&count, 1);
 }
 
 void YWindowManager::setDesktopViewport() {

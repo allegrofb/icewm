@@ -40,8 +40,6 @@ public:
 
 private:
     void obinit();// { addStyle(wsNoExpose); setParentRelative(); }
-    cairo_surface_t* fKPixmap;
-    cairo_surface_t* getKPixmap(unsigned int width, unsigned int height);
     static gboolean draw_cb(GtkWidget *widget, cairo_t *cr, void *data);
 
     osmart<DObject> fObject;

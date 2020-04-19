@@ -27,7 +27,7 @@ WorkspaceButton::WorkspaceButton(int ws, YWindow *parent, WorkspaceDragger* d):
     fDelta(0),
     fDownX(0),
     fDragging(false),
-    fGraphics(this),
+    fGraphics(this, getKPixmap(width(),height())),
     fPane(d)
 {
     MSG(("WorkspaceButton::WorkspaceButton"));
@@ -35,9 +35,21 @@ WorkspaceButton::WorkspaceButton(int ws, YWindow *parent, WorkspaceDragger* d):
     setParentRelative();
     //setDND(true);
     setTitle(name());
+    g_signal_connect(getWidget(), "draw", G_CALLBACK(draw_cb), this);
+}
+
+gboolean WorkspaceButton::draw_cb(GtkWidget *widget, cairo_t *cr, void *data)
+{
+    MSG(("WorkspaceButton::draw_cb"));    
+    WorkspaceButton* app = (WorkspaceButton*)data;
+    cairo_set_source_surface (cr, app->fKPixmap, 0, 0);
+    cairo_paint (cr);
+    return TRUE;
 }
 
 void WorkspaceButton::configure(const YRect2& r) {
+    MSG(("WorkspaceButton::configure 1"));
+
     if (r.resized() || !fGraphics) {
         repaint();
     }
@@ -45,6 +57,7 @@ void WorkspaceButton::configure(const YRect2& r) {
 
 void WorkspaceButton::repaint() {
     fGraphics.paint();
+    gtk_widget_queue_draw(getWidget());
 }
 
 void WorkspaceButton::paintBackground(Graphics& g, const YRect& r) {
@@ -237,6 +250,8 @@ WorkspacesPane::WorkspacesPane(YWindow *parent):
 }
 
 void WorkspacesPane::resize(unsigned width, unsigned height) {
+    MSG(("WorkspacesPane::resize 1"));
+
     bool save(fReconfiguring);
     fReconfiguring = true;
     long limit = limitWidth(width);
@@ -362,26 +377,21 @@ void WorkspacesPane::configure(const YRect2& r) {
 
     if ((fReconfiguring | fRepositioning) == false && r.resized()) {
         fReconfiguring = true;
-        MSG(("WorkspacesPane::configure 2"));
         if (count() == 0) {
-        MSG(("WorkspacesPane::configure 3"));
-
+            MSG(("WorkspacesPane::configure 3"));
             unsigned width = 0, height = max(smallIconSize + 8, r.height());
-        MSG(("WorkspacesPane::configure 3 ####"));
 
             for (int i = 0, n = workspaceCount; i < n; ++i)    //<----- Workspaces global variable
             {
-        MSG(("WorkspacesPane::configure 3 1111"));                
+                MSG(("WorkspacesPane::configure 3 1111"));                
                 width += create(i, height)->width();
             }
             resize(width, height);
-        MSG(("WorkspacesPane::configure 3 2222"));
-
             setPressed(manager->activeWorkspace(), true);
             paths = null;
         }
         else {
-        MSG(("WorkspacesPane::configure 4"));
+            MSG(("WorkspacesPane::configure 4"));
             repositionButtons();
         }
         fReconfiguring = false;
@@ -416,6 +426,9 @@ void WorkspacesPane::updateButtons() {
 WorkspaceButton* WorkspacesPane::create(int workspace, unsigned height) {
     MSG(("WorkspacesPane::create 1"));    
     WorkspaceButton *wk = new WorkspaceButton(workspace, this, this);
+
+    gtk_box_pack_start(GTK_BOX(getWidget()), wk->getWidget(), FALSE, FALSE, 0);
+
     fButtons += wk;
     if (pagerShowPreview) {
         double scaled = double(height * desktop->width()) / desktop->height();
@@ -426,6 +439,9 @@ WorkspaceButton* WorkspacesPane::create(int workspace, unsigned height) {
     }
     if (workspace == 0)
         wk->show();
+
+    MSG(("WorkspacesPane::create end"));    
+
     return wk;
 }
 
