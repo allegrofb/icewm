@@ -64,7 +64,7 @@ private:
     int fDelta;
     int fDownX;
     bool fDragging;
-    GraphicsBuffer fGraphics;
+    // GraphicsBuffer fGraphics;
     lazy<YTimer> fRaiseTimer;
     osmart<YInputLine> fInput;
     WorkspaceDragger* fPane;

@@ -268,7 +268,8 @@ public :
 
     cairo_surface_t* fKPixmap;
     cairo_surface_t* getKPixmap(unsigned int width, unsigned int height);
-
+    unsigned int surface_w, surface_h;
+    
 private:
     GtkWidget *fWidget;
     GtkWidget *createWidget(int flag);

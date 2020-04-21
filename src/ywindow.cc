@@ -608,11 +608,15 @@ void YWindow::reparent(YWindow *parent, int x, int y) {
 }
 
 void YWindow::show() {
+    MSG(("YWindow::show 1"));    
+
     if (!(flags & (wfVisible | wfDestroyed))) {
         flags |= wfVisible;
         if (!(flags & wfNullSize))
         {
             // XMapWindow(xapp->display(), handle());
+            MSG(("YWindow::show 2"));    
+            gtk_widget_show_all(getWidget());
         }
     }
 }
@@ -1212,7 +1216,7 @@ void YWindow::setSize(unsigned width, unsigned height) {
 
         fWidth = width;
         fHeight = height;
-
+        gtk_widget_set_size_request(fWidget,fWidth,fHeight);
         MSG(("YWindow::setSize 2, %d %d %d %d", old.x(),old.y(),old.width(),old.height()));    
 
         // if (flags & wfCreated)
@@ -1225,20 +1229,18 @@ void YWindow::setSize(unsigned width, unsigned height) {
 
 cairo_surface_t* YWindow::getKPixmap(unsigned int width, unsigned int height)
 {
-    static unsigned int w,h;
-
     if (fKPixmap == None)
     {
         fKPixmap = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);         
-        w = width;
-        h = height;
+        surface_w = width;
+        surface_h = height;
     }
-    else if(w != width || h != height)
+    else if(surface_w != width || surface_h != height)
     {
         cairo_surface_destroy(fKPixmap);
         fKPixmap = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);         
-        w = width;
-        h = height;
+        surface_w = width;
+        surface_h = height;
     }
 
     return fKPixmap;

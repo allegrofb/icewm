@@ -740,7 +740,7 @@ void Graphics::compositeImage(ref<YImage> img, int const sx, int const sy, unsig
 /******************************************************************************/
 
 void Graphics::draw3DRect(int x, int y, unsigned wid, unsigned hei, bool raised) {
-    return;
+
     YColor back(color());
     YColor bright(back.brighter());
     YColor dark(back.darker());

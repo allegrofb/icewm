@@ -27,10 +27,9 @@ WorkspaceButton::WorkspaceButton(int ws, YWindow *parent, WorkspaceDragger* d):
     fDelta(0),
     fDownX(0),
     fDragging(false),
-    fGraphics(this, getKPixmap(width(),height())),
     fPane(d)
 {
-    MSG(("WorkspaceButton::WorkspaceButton"));
+    MSG(("WorkspaceButton::WorkspaceButton, %d %d",width(),height()));
     addStyle(wsNoExpose);
     setParentRelative();
     //setDND(true);
@@ -40,8 +39,8 @@ WorkspaceButton::WorkspaceButton(int ws, YWindow *parent, WorkspaceDragger* d):
 
 gboolean WorkspaceButton::draw_cb(GtkWidget *widget, cairo_t *cr, void *data)
 {
-    MSG(("WorkspaceButton::draw_cb"));    
     WorkspaceButton* app = (WorkspaceButton*)data;
+    MSG(("WorkspaceButton::draw_cb %p", app->fKPixmap));    
     cairo_set_source_surface (cr, app->fKPixmap, 0, 0);
     cairo_paint (cr);
     return TRUE;
@@ -50,13 +49,19 @@ gboolean WorkspaceButton::draw_cb(GtkWidget *widget, cairo_t *cr, void *data)
 void WorkspaceButton::configure(const YRect2& r) {
     MSG(("WorkspaceButton::configure 1"));
 
-    if (r.resized() || !fGraphics) {
+    // if (r.resized() || !fGraphics) {
+    if (r.resized())
+    {
         repaint();
     }
 }
 
 void WorkspaceButton::repaint() {
-    fGraphics.paint();
+    MSG(("WorkspaceButton::repaint %d %d",width(),height()));
+
+    GraphicsBuffer(this, getKPixmap(width(),height())).paint();
+
+    MSG(("WorkspaceButton::repaint, gtk_widget_queue_draw"));
     gtk_widget_queue_draw(getWidget());
 }
 
@@ -383,7 +388,7 @@ void WorkspacesPane::configure(const YRect2& r) {
 
             for (int i = 0, n = workspaceCount; i < n; ++i)    //<----- Workspaces global variable
             {
-                MSG(("WorkspacesPane::configure 3 1111"));                
+                MSG(("WorkspacesPane::configure, create"));                
                 width += create(i, height)->width();
             }
             resize(width, height);
@@ -424,10 +429,8 @@ void WorkspacesPane::updateButtons() {
 }
 
 WorkspaceButton* WorkspacesPane::create(int workspace, unsigned height) {
-    MSG(("WorkspacesPane::create 1"));    
+    MSG(("WorkspacesPane::create workspace=%d, height=%d",workspace,height));    
     WorkspaceButton *wk = new WorkspaceButton(workspace, this, this);
-
-    gtk_box_pack_start(GTK_BOX(getWidget()), wk->getWidget(), FALSE, FALSE, 0);
 
     fButtons += wk;
     if (pagerShowPreview) {
@@ -439,6 +442,8 @@ WorkspaceButton* WorkspacesPane::create(int workspace, unsigned height) {
     }
     if (workspace == 0)
         wk->show();
+
+    gtk_box_pack_start(GTK_BOX(getWidget()), wk->getWidget(), FALSE, FALSE, 0);
 
     MSG(("WorkspacesPane::create end"));    
 
@@ -628,6 +633,8 @@ void WorkspacesPane::repaint() {
 }
 
 void WorkspaceButton::paint(Graphics &g, const YRect& r) {
+    MSG(("WorkspaceButton::paint 1"));
+
     paintBackground(g, r);
 
     if (!pagerShowPreview) {
@@ -722,6 +729,7 @@ void WorkspaceButton::paint(Graphics &g, const YRect& r) {
             wx = (w - font->textWidth(label)) / 2 + x;
             wy = (h - font->height()) / 2 + font->ascent() + y;
 
+            MSG(("WorkspaceButton::paint label, %s %d %d", label, wx, wy));
             g.setFont(font);
             g.setColor(colors[0]);
             g.drawChars(label, 0, strlen(label), wx+1, wy+1);

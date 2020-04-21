@@ -2227,8 +2227,12 @@ void WorkspacePaneView()
 
     debug = 1;
 
+    MSG(("1111111"));
+
     WorkspacesPane *wsp = new WorkspacesPane(NULL);
-    wsp->setSize(400,50);
+    MSG(("222222"));
+    wsp->setSize(100,50);
+    MSG(("333333"));
     // wsp->resize(400,50);
     clock = wsp->getWidget();
     gtk_container_add(GTK_CONTAINER(window), clock);
