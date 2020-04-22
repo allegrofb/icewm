@@ -296,6 +296,11 @@ void Graphics::drawChars(const ustring &s, int x, int y) {
     //     cstring cs(s);
     //     fFont->drawGlyphs(*this, x, y, cs.c_str(), cs.c_str_len());
     // }
+
+    cstring cs(s);
+    cairo_move_to(k_gc, x, y);
+    cairo_show_text(k_gc, cs.c_str());
+
 }
 
 void Graphics::drawChars(const char *data, int offset, int len, int x, int y) {
@@ -312,7 +317,6 @@ void Graphics::drawString(int x, int y, char const * str) {
 }
 
 void Graphics::drawStringEllipsis(int x, int y, const char *str, int maxWidth) {
-    return;
 
     int const len(strlen(str));
     int const w = (fFont != null) ? fFont->textWidth(str, len) : 0;
@@ -381,7 +385,6 @@ void Graphics::drawStringEllipsis(int x, int y, const char *str, int maxWidth) {
 }
 
 void Graphics::drawStringEllipsis(int x, int y, const ustring &str, int maxWidth) {
-    return;
     cstring cs(str);
     return drawStringEllipsis(x, y, cs.c_str(), maxWidth);
 }
@@ -513,7 +516,9 @@ void Graphics::fillPolygon(XPoint *points, int const n, int const shape,
         points[i].x -= xOrigin;
         points[i].y -= yOrigin;
     }
+
     // XFillPolygon(display(), drawable(), gc, points, n, shape, mode);
+
     for (int i = 0; i < n1; i++) {
         points[i].x += xOrigin;
         points[i].y += yOrigin;
@@ -681,8 +686,16 @@ void Graphics::drawClippedPixmap(Pixmap pix, Pixmap clip,
 }
 
 void Graphics::compositeImage(ref<YImage> img, int const sx, int const sy, unsigned w, unsigned h, int dx, int dy) {
+    MSG(("Graphics::compositeImage, %d %d %d %d %d %d",sx,sy,w,h,dx,dy));
 
+    GdkPixbuf* buf = (GdkPixbuf*)(img->getPtr());
+
+    cairo_surface_t* src = 
+    gdk_cairo_surface_create_from_pixbuf (buf,1,NULL);
+    cairo_set_source_surface(k_gc, src, dx, dy);
+    cairo_paint(k_gc);
     return;
+
     if (picture()) {
         int rx = dx;
         int ry = dy;
@@ -1057,7 +1070,6 @@ void Graphics::drawGradient(ref<YImage> gradient,
 void Graphics::drawArrow(YDirection direction, int x, int y, unsigned size,
                          bool pressed)
 {
-        return;
 
     YColor nc(color());
     YColor oca = pressed ? nc.darker() : nc.brighter(),
@@ -1066,6 +1078,10 @@ void Graphics::drawArrow(YDirection direction, int x, int y, unsigned size,
         icb = pressed ? nc.brighter() : YColor::black;
 
     XPoint points[3];
+    // typedef struct {
+    //     short x, y;
+    // } Point;
+    // Point points[3];
 
     short const am(size / 2);
     short const ah(wmLook == lookGtk ||
@@ -1144,7 +1160,10 @@ void Graphics::drawArrow(YDirection direction, int x, int y, unsigned size,
         drawLine(points[2].x + dx0, points[2].y + dy0,
                  points[1].x + dx0, points[1].y + dy0);
     } else
-        fillPolygon(points, 3, Convex, CoordModeOrigin);
+    {
+        fillPolygon(points, 3, Convex, CoordModeOrigin);  //hyjiang todo
+    }
+
 
     // ============================================================= outer bevel ===
     if (wmLook == lookMotif || wmLook == lookGtk) {
@@ -1159,7 +1178,9 @@ void Graphics::drawArrow(YDirection direction, int x, int y, unsigned size,
             setColor(wmLook == lookMotif ? ocb : icb);
 
     } else
-        drawLines(points, 3, CoordModeOrigin);
+    {
+        drawLines(points, 3, CoordModeOrigin);   //hyjiang todo
+    }
 
     if (wmLook != lookWarp3)
         drawLine(points[0].x, points[0].y, points[2].x, points[2].y);

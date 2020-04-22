@@ -371,6 +371,7 @@ unsigned YIcon::hugeSize() {
 }
 
 bool YIcon::draw(Graphics &g, int x, int y, int size) {
+    MSG(("YIcon::draw 1"));
     ref<YImage> image = getScaledIcon(size);
     if (image != null) {
         if (!doubleBuffer) {

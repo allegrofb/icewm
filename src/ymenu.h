@@ -67,6 +67,9 @@ public:
     virtual void raise();
 
 private:
+    static gboolean draw_cb(GtkWidget *widget, cairo_t *cr, void *data);
+
+private:
     YObjectArray<YMenuItem> fItems;
     int selectedItem;
     int paintedItem;
@@ -80,7 +83,7 @@ private:
     int activatedX, activatedY;
     int submenuItem;
 
-    GraphicsBuffer fGraphics;
+    // GraphicsBuffer fGraphics;
     ref<YPixmap> fGradient;
     ref<YPixmap> fMenusel;
 

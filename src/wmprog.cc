@@ -59,6 +59,7 @@ ObjectMenu::~ObjectMenu() {
 }
 
 void ObjectMenu::addObject(DObject *fObject) {
+    // return;  //hyjiang
     add(new DObjectMenuItem(fObject));
 }
 
@@ -67,10 +68,14 @@ void ObjectMenu::addObject(DObject *fObject, const char *icons) {
 }
 
 void ObjectMenu::addSeparator() {
+    // return;  //hyjiang
+
     YMenu::addSeparator();
 }
 
 void ObjectMenu::addContainer(const ustring &name, ref<YIcon> icon, ObjectMenu *container) {
+    // return;  //hyjiang
+
     if (container) {
         YMenuItem *item =
             addSubmenu(name, -3, container);
@@ -120,6 +125,8 @@ DProgram::~DProgram() {
 }
 
 void DProgram::open() {
+    MSG(("DProgram::open *************************"));
+
     if (fRestart)
         smActionListener->restartClient(fCmd.string(), fArgs.getCArray());
     else if (fRes)
@@ -279,11 +286,16 @@ MenuFileMenu::~MenuFileMenu() {
 }
 
 void MenuFileMenu::updatePopup() {
+
     if (!autoReloadMenus && fPath != null)
         return;
 
+    MSG(("MenuFileMenu::updatePopup 1"));
+
     upath np = app->findConfigFile(upath(fName));
     bool rel = false;
+
+    MSG(("MenuFileMenu::updatePopup 2"));
 
 
     if (fPath == null) {
@@ -312,9 +324,13 @@ void MenuFileMenu::updatePopup() {
 }
 
 void MenuFileMenu::refresh() {
+    MSG(("MenuFileMenu::refresh"));
+
     removeAll();
     if (fPath != null)
         loadMenus(fPath, this);
+
+    MSG(("MenuFileMenu::refresh end"));
 }
 
 MenuProgMenu::MenuProgMenu(
@@ -751,7 +767,13 @@ HelpMenu::HelpMenu(
 }
 
 void StartMenu::refresh() {
+
+    MSG(("StartMenu::refresh()"));
+
+
     MenuFileMenu::refresh();
+
+    // return;//hyjiang
 
     if (itemCount())
         addSeparator();
@@ -815,6 +837,8 @@ void StartMenu::refresh() {
             new HelpMenu(app, smActionListener, wmActionListener);
             addSubmenu(_("_Help"), -2, helpMenu, "help");
     }
+
+    return;//hyjiang
 
     if (showSettingsMenu || showFocusModeMenu || showThemesMenu) {
         // When we have only 2 entries (focus + themes) then

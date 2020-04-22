@@ -515,6 +515,9 @@ upath YApplication::findConfigFile(upath name) {
 }
 
 upath YApplication::locateConfigFile(upath name) {
+
+    MSG(("YApplication::locateConfigFile 1, %s",name.string().c_str()));
+
     upath p;
 
     if (name.isAbsolute())

@@ -83,7 +83,7 @@ Picture YPixmap::picture() {
 
 void YPixmap::freePicture() {
     if (fPicture) {
-        XRenderFreePicture(xapp->display(), fPicture);
+        // XRenderFreePicture(xapp->display(), fPicture);
         fPicture = None;
     }
 }

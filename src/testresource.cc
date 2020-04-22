@@ -2239,6 +2239,42 @@ void WorkspacePaneView()
     gtk_widget_show_all(window);
 }
 
+
+
+void StartMenuView(IApp *app)
+{
+    GtkWidget *window;
+    GtkWidget *clock;
+
+    window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
+
+    debug = 1;
+    
+    // clock = rootMenu->getWidget();
+    // rootMenu->setSize(200,200);
+    // rootMenu->updatePopup();
+
+    StartMenu* menu = new StartMenu(app, NULL, NULL, "menu");
+    clock = menu->getWidget();
+    menu->setSize(200,500);
+    MSG(("111111"));
+    // menu->updatePopup(); 
+    // menu->show();
+    // menu->activatePopup(0);
+
+    menu->k_popup(0,0,0,
+                0, 0, 0, 0,
+                0,
+                YPopupWindow::pfCanFlipVertical |
+                YPopupWindow::pfCanFlipHorizontal |
+                YPopupWindow::pfPopupMenu);
+
+    gtk_container_add(GTK_CONTAINER(window), clock);
+    gtk_widget_show_all(window);
+}
+
+
 int main(int argc, char *argv[]) {
 
     YLocale locale;
@@ -2324,10 +2360,7 @@ int main(int argc, char *argv[]) {
 
     manager = new YWindowManager(
         NULL, NULL, NULL, nullptr, 0);
-
     manager->initWorkspaces();
-    // manager->grabKeys();
-    // manager->setupRootProxy();
 
     gtk_init(&argc, &argv);
 
@@ -2339,7 +2372,8 @@ int main(int argc, char *argv[]) {
     // CPUStatusView();
     // ClockView();
     // ObjectButtonView();
-    WorkspacePaneView();
+    // WorkspacePaneView();
+    StartMenuView(&app);
     gtk_main();
 
     return 0;

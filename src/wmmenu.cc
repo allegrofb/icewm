@@ -131,6 +131,8 @@ char* MenuLoader::parseKey(char *word, char *p)
 
 char* MenuLoader::parseProgram(char *word, char *p, ObjectContainer *container)
 {
+    MSG(("MenuLoader::parseProgram 1"));
+
     bool runonce = !strcmp(word, "runonce");
     bool restart = !strcmp(word, "restart");
 
@@ -184,11 +186,15 @@ char* MenuLoader::parseProgram(char *word, char *p, ObjectContainer *container)
 
     if (prog) container->addObject(prog);
 
+    MSG(("MenuLoader::parseProgram end"));
+
     return p;
 }
 
 char* MenuLoader::parseAMenu(char *p, ObjectContainer *container)
 {
+    MSG(("MenuLoader::parseAMenu 1"));
+
     Argument name;
 
     p = YConfig::getArgument(&name, p);
@@ -217,7 +223,7 @@ char* MenuLoader::parseAMenu(char *p, ObjectContainer *container)
         p = parseMenus(p, sub);
 
         if (sub->itemCount() == 0)
-            delete sub;
+            delete sub;            //hyjiang
         else
             container->addContainer(name.cstr(), icon, sub);
 
@@ -230,6 +236,8 @@ char* MenuLoader::parseAMenu(char *p, ObjectContainer *container)
 
 char* MenuLoader::parseMenuFile(char *p, ObjectContainer *container)
 {
+    MSG(("MenuLoader::parseMenuFile 1"));
+
     Argument name;
 
     p = YConfig::getArgument(&name, p);
@@ -376,6 +384,8 @@ char* MenuLoader::parseIncludeProgStatement(char *p, ObjectContainer *container)
 
 char* MenuLoader::parseWord(char *word, char *p, ObjectContainer *container)
 {
+    MSG(("MenuLoader::parseWord 1, %s", word));
+    
     if (container) {
         if (!strcmp(word, "separator")) {
             container->addSeparator();
@@ -405,10 +415,12 @@ char* MenuLoader::parseWord(char *word, char *p, ObjectContainer *container)
             p = parseIncludeProgStatement(p, container);
         }
         else if (*p == '}') {
+            MSG(("MenuLoader::parseWord end }"));
             return p;
         }
         else {
             msg(_("Unknown keyword '%s'"), word);
+            MSG(("MenuLoader::parseWord end *****************"));
             return 0;
         }
     }
@@ -421,13 +433,19 @@ char* MenuLoader::parseWord(char *word, char *p, ObjectContainer *container)
     else {
         msg(_("Unknown keyword for a non-container: '%s'.\n"
               "Expected either 'key' or 'runonce' here.\n"), word);
+        MSG(("MenuLoader::parseWord end *******"));
         return 0;
     }
+
+    MSG(("MenuLoader::parseWord end"));
+
     return p;
 }
 
 char* MenuLoader::parseMenus(char *data, ObjectContainer *container)
 {
+    MSG(("MenuLoader::parseMenus *****"));
+
     for (char* p = data; p && *p; ) {
         if (ASCII::isWhiteSpace(*p)) {
             ++p;
@@ -439,11 +457,17 @@ char* MenuLoader::parseMenus(char *data, ObjectContainer *container)
             return ++p;
         }
         else {
-            char word[32];
+            char word[64];
+            MSG(("MenuLoader::parseMenus 2, %d",*p));
             p = getWord(word, sizeof(word), p);
+            MSG(("MenuLoader::parseMenus 3, %d %s",*p,word));
             p = parseWord(word, p, container);
+            MSG(("MenuLoader::parseMenus 4, %d",*p));
         }
     }
+
+    MSG(("MenuLoader::parseMenus end *****"));
+
     return 0;
 }
 
@@ -459,6 +483,8 @@ void MenuLoader::loadMenus(upath menufile, ObjectContainer *container)
         parseMenus(buf, container);
         delete[] buf;
     }
+
+    MSG(("MenuLoader::loadMenus end *****"));
 }
 
 void MenuLoader::progMenus(

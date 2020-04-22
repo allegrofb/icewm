@@ -152,6 +152,7 @@ YWindow::YWindow(YWindow *parent, Window win, int depth,
 
 
 YWindow::YWindow(int widget):
+    fParentWindow(0),
     fFocusedWindow(0),
     fWidget(0), flags(0), fStyle(0), fX(0), fY(0), fWidth(1), fHeight(1),
     fPointer(), unmapCount(0),
@@ -292,7 +293,7 @@ Graphics &YWindow::getGraphics() {
 }
 
 void YWindow::repaint() {
-    XClearArea(xapp->display(), handle(), 0, 0, 0, 0, True);
+    // XClearArea(xapp->display(), handle(), 0, 0, 0, 0, True);
 }
 
 void YWindow::repaintSync() { // useful when server grabbed
@@ -551,10 +552,10 @@ void YWindow::destroy() {
             setDestroyed();
             if (!(flags & wfAdopted)) {
                 MSG(("----------------------destroy %lX", fHandle));
-                XDestroyWindow(xapp->display(), fHandle);
+                // XDestroyWindow(xapp->display(), fHandle);
                 removeAllIgnoreUnmap(fHandle);
             } else {
-                XSelectInput(xapp->display(), fHandle, NoEventMask);
+                // XSelectInput(xapp->display(), fHandle, NoEventMask);
             }
         }
         windowContext.remove(fHandle);
@@ -1274,6 +1275,9 @@ void YWindow::setParentRelative() {
 }
 
 void YWindow::mapToGlobal(int& x, int& y) {
+
+    return;
+
     Window child;
 
     XTranslateCoordinates(xapp->display(),

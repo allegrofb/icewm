@@ -44,7 +44,8 @@ void YXApplication::popdown(YPopupWindow *popdown) {
     }
 }
 
-YPopupWindow::YPopupWindow(YWindow *aParent): YWindow(aParent) {
+//YPopupWindow::YPopupWindow(YWindow *aParent): YWindow(aParent) {
+YPopupWindow::YPopupWindow(YWindow *aParent): YWindow(1) {
     fForWindow = 0;
     fPopDownListener = 0;
     fPrevPopup = 0;
@@ -98,6 +99,112 @@ bool YPopupWindow::popup(YWindow *owner,
         fForWindow = 0;
         return false;
     }
+}
+
+
+bool YPopupWindow::k_popup(YWindow *owner,
+                         YWindow *forWindow,
+                         YPopDownListener *popDown,
+                         int x, int y, int x_delta, int y_delta,
+                         int xiScreen,
+                         unsigned int flags)
+{
+
+    if ((flags & pfPopupMenu) && showPopupsAbovePointer)
+        flags |= pfFlipVertical;
+
+    fFlags = flags;
+
+    updatePopup();
+
+/// TODO #warning "FIXME: this logic needs rethink"
+    MSG(("x: %d y: %d x_delta: %d y_delta: %d", x, y, x_delta, y_delta));
+
+    int dx, dy;
+    unsigned uw, uh;
+    desktop->getScreenGeometry(&dx, &dy, &uw, &uh, xiScreen);
+    int dw = int(uw), dh = int(uh);
+
+    { // check available space on left and right
+        int spaceRight = dx + dw - x;
+        int spaceLeft = x - x_delta - dx;
+
+
+        int hspace = (spaceLeft < spaceRight) ? spaceRight : spaceLeft;
+
+        sizePopup(hspace);
+    }
+
+    int rspace = dw - x;
+    int lspace = x - x_delta;
+    int tspace = dh - y;
+    int bspace = y - y_delta;
+
+    /* !!! FIX this to maximize visible area */
+    if ((x + int(width()) > dx + dw) || (fFlags & pfFlipHorizontal)) {
+        if (//(lspace >= rspace) &&
+            (fFlags & (pfCanFlipHorizontal | pfFlipHorizontal)))
+        {
+            x -= int(width()) + x_delta;
+            fFlags |= pfFlipHorizontal;
+        } else
+            x = dx + dw - int(width());
+    }
+    if ((y + int(height()) > dy + dh) || (fFlags & pfFlipVertical)) {
+        if (//(tspace >= bspace) &&
+            (fFlags & (pfCanFlipVertical | pfFlipVertical)))
+        {
+            y -= int(height()) + y_delta;
+            fFlags |= pfFlipVertical;
+        } else
+            y = dy + dh - int(height());
+    }
+    if (x < dx && (x + int(width()) < dx + dw / 2)) {
+        if ((rspace >= lspace) &&
+            (fFlags & pfCanFlipHorizontal))
+            x += int(width()) + x_delta;
+        else
+            x = dx;
+    }
+    if (y < dy && (y + int(height()) < dy + dh / 2)) {
+        if ((bspace >= tspace) &&
+            (fFlags & pfCanFlipVertical))
+            y += int(height()) + y_delta;
+        else
+            y = dy;
+    }
+
+    if (forWindow == 0) {
+        if ((x + int(width()) > dx + dw))
+            x = dw - int(width());
+
+        if (x < dx)
+            x = dx;
+
+        if ((y + int(height()) > dy + dh))
+            y = dh - int(height());
+
+        if (y < dy)
+            y = dy;
+    }
+
+    setPosition(x, y);
+
+
+    PRECONDITION(fUp == false);
+    fPrevPopup = 0;
+    fFlags = flags;
+    fForWindow = forWindow;
+    fPopDownListener = popDown;
+    fOwner = owner;
+    fXiScreen = xiScreen;
+
+    raise();
+    show();
+
+    fUp = true;
+    activatePopup(flags);
+    return true;
 }
 
 bool YPopupWindow::popup(YWindow *owner,

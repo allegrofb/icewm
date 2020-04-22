@@ -62,9 +62,10 @@ void YMenu::finishPopup(YMenuItem *item, YAction action,
 
 lazy<YTimer> YMenu::fMenuTimer;
 
+
 YMenu::YMenu(YWindow *parent):
     YPopupWindow(parent),
-    fGraphics(this),
+    // fGraphics(this),
     fGradient(null),
     fMenusel(null)
 {
@@ -84,6 +85,17 @@ YMenu::YMenu(YWindow *parent):
     fTimerY = 0;
     fTimerSubmenuItem = -1;
     addStyle(wsNoExpose);
+
+    g_signal_connect(getWidget(), "draw", G_CALLBACK(draw_cb), this);    
+}
+
+gboolean YMenu::draw_cb(GtkWidget *widget, cairo_t *cr, void *data)
+{
+    MSG(("YMenu::draw_cb"));    
+    YMenu* app = (YMenu*)data;
+    cairo_set_source_surface (cr, app->fKPixmap, 0, 0);
+    cairo_paint (cr);
+    return TRUE;
 }
 
 void YMenu::raise() {
@@ -109,6 +121,7 @@ YMenu::~YMenu() {
 
 void YMenu::activatePopup(int flags) {
     repaint();
+    return;//hyjiang
     if (popupFlags() & pfButtonDown)
         focusItem(-1);
     else {
@@ -912,7 +925,9 @@ void YMenu::repaintItem(int item) {
     unsigned h;
 
     if (findItemPos(item, x, y, h) != -1)
-        fGraphics.paint(YRect(0, y, width(), h));
+    {
+        GraphicsBuffer(this,getKPixmap(width(),height())).paint(YRect(0, y, width(), h));  //hyjiang
+    }
 }
 
 void YMenu::paintItems() {
@@ -994,6 +1009,9 @@ void YMenu::drawSeparator(Graphics &g, int x, int y, unsigned w) {
 
 void YMenu::paintItem(Graphics &g, const int i, const int l, const int t, const int r,
                       const int minY, const int maxY, bool draw) {
+
+    MSG(("YMenu::paintItem 1, %d %d %d %d %d %d %d",i, l, t, r, minY, maxY, draw));
+
     int const fontHeight(menuFont->height() + 1);
     int const fontBaseLine(menuFont->ascent());
 
@@ -1008,6 +1026,8 @@ void YMenu::paintItem(Graphics &g, const int i, const int l, const int t, const 
         bool const active(i == paintedItem &&
                           (mitem->getAction() != actionNull ||
                            mitem->getSubmenu()));
+
+        MSG(("YMenu::paintItem 2, %d",active));
 
         int eh, top, bottom, pad, ih;
         eh = getItem(i)->queryHeight(top, bottom, pad);
@@ -1108,8 +1128,11 @@ void YMenu::paintItem(Graphics &g, const int i, const int l, const int t, const 
                     int dx = l + 1 + delta;
                     int dy = t + delta + top + pad +
                                (eh - top - pad * 2 - bottom - size) / 2;
+                    MSG(("YMenu::paintItem draw icon"));
                     mitem->getIcon()->draw(g, dx, dy, size);
                 }
+
+                MSG(("YMenu::paintItem name=%s",cstring(name).c_str()));
 
                 if (name != null) {
                     int const maxWidth =
@@ -1118,6 +1141,8 @@ void YMenu::paintItem(Graphics &g, const int i, const int l, const int t, const 
                         namePos;
 
                     if (!mitem->isEnabled()) {
+                        MSG(("YMenu::paintItem 23"));
+
                         g.setColor(disabledMenuItemSt ? disabledMenuItemSt :
                                    menuBg->brighter());
                         g.drawStringEllipsis(1 + delta + namePos, 1 + baseLine,
@@ -1128,6 +1153,7 @@ void YMenu::paintItem(Graphics &g, const int i, const int l, const int t, const 
                                                 name, mitem->getHotCharPos());
                     }
                     g.setColor(fg);
+                    MSG(("YMenu::paintItem 24, %d %d %s %d",delta + namePos, baseLine, cstring(name).c_str(), maxWidth));
                     g.drawStringEllipsis(delta + namePos, baseLine, name, maxWidth);
 
                     if (mitem->getHotCharPos() != -1)
@@ -1135,6 +1161,7 @@ void YMenu::paintItem(Graphics &g, const int i, const int l, const int t, const 
                                             name, mitem->getHotCharPos());
                 }
 
+                MSG(("YMenu::paintItem param=%s",cstring(param).c_str()));
                 if (param != null) {
                     if (!mitem->isEnabled()) {
                         g.setColor(disabledMenuItemSt ? disabledMenuItemSt :
@@ -1187,10 +1214,15 @@ void YMenu::paintItem(Graphics &g, const int i, const int l, const int t, const 
 }
 
 void YMenu::paint(Graphics &g, const YRect &r1) {
+    MSG(("YMenu::paint 1"));
+
     if (g.drawable() == None || int(r1.width()) < 1 || int(r1.height()) < 1)
         return;
+    MSG(("YMenu::paint 2"));
 
     drawBackground(g, r1.x(), r1.y(), r1.width(), r1.height());
+
+    MSG(("YMenu::paint 3, wmLook=%d",wmLook));
 
     if (wmLook == lookMetal || wmLook == lookFlat) {
         g.setColor(activeMenuItemBg ? activeMenuItemBg : menuBg);
@@ -1246,8 +1278,10 @@ void YMenu::configure(const YRect2& r) {
 }
 
 void YMenu::repaint() {
-    fGraphics.release();
-    fGraphics.paint();
+    // fGraphics.release();
+    // fGraphics.paint();
+    GraphicsBuffer(this,getKPixmap(width(),height())).paint();
+    gtk_widget_queue_draw (getWidget()); 
 }
 
 // vim: set sw=4 ts=4 et:

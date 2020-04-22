@@ -27,6 +27,13 @@ public:
                YPopDownListener *popDown,
                int x, int y,
                unsigned int flags);
+    
+    bool k_popup(YWindow *owner,
+                         YWindow *forWindow,
+                         YPopDownListener *popDown,
+                         int x, int y, int x_delta, int y_delta,
+                         int xiScreen,
+                         unsigned int flags);               
 private:
     bool popup(YWindow *owner,
                YWindow *forWindow,
