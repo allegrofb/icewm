@@ -86,7 +86,9 @@ YMenu::YMenu(YWindow *parent):
     fTimerSubmenuItem = -1;
     addStyle(wsNoExpose);
 
-    g_signal_connect(getWidget(), "draw", G_CALLBACK(draw_cb), this);    
+    g_signal_connect(getWidget(), "draw", G_CALLBACK(draw_cb), this);   
+    g_signal_connect(getWidget(), "button-press-event", G_CALLBACK(button_cb), this);   
+     
 }
 
 gboolean YMenu::draw_cb(GtkWidget *widget, cairo_t *cr, void *data)
@@ -95,6 +97,15 @@ gboolean YMenu::draw_cb(GtkWidget *widget, cairo_t *cr, void *data)
     YMenu* app = (YMenu*)data;
     cairo_set_source_surface (cr, app->fKPixmap, 0, 0);
     cairo_paint (cr);
+    return TRUE;
+}
+
+gboolean YMenu::button_cb(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+{
+    MSG(("YMenu::button_cb"));    
+    YMenu* app = (YMenu*)user_data;
+    app->handleButton(*event);
+
     return TRUE;
 }
 
@@ -217,6 +228,8 @@ void YMenu::focusItem(int itemNo) {
 }
 
 void YMenu::activateSubMenu(int item, bool byMouse) {
+    MSG(("YMenu::activateSubMenu 1, %d",item));
+
     YMenu *sub = 0;
     if (item != -1 && getItem(item)->isEnabled())
         sub = getItem(item)->getSubmenu();
@@ -234,13 +247,43 @@ void YMenu::activateSubMenu(int item, bool byMouse) {
             YRect rect(x(), y(), width(), height());
             if (sub->getActionListener() == 0)
                 sub->setActionListener(getActionListener());
-            sub->popup(0, this, 0,
+
+            // sub->popup(0, this, 0,
+            //            x() + int(width()) - r, y() + yp - t,
+            //            int(width()) - r - l, -1,
+            //            getXiScreen(),
+            //            YPopupWindow::pfCanFlipHorizontal |
+            //            (popupFlags() & YPopupWindow::pfFlipHorizontal) |
+            //            (byMouse ? (unsigned int)YPopupWindow::pfButtonDown : 0U));
+            debug = 0;
+
+            sub->setSize(200,500);
+            sub->k_popup(0, this, 0,
                        x() + int(width()) - r, y() + yp - t,
                        int(width()) - r - l, -1,
                        getXiScreen(),
                        YPopupWindow::pfCanFlipHorizontal |
                        (popupFlags() & YPopupWindow::pfFlipHorizontal) |
                        (byMouse ? (unsigned int)YPopupWindow::pfButtonDown : 0U));
+
+            debug = 1;
+
+            //show in another window, hyjiang
+            GtkWidget *window;
+            window = gtk_widget_new(GTK_TYPE_WINDOW,"type", GTK_WINDOW_TOPLEVEL,NULL);
+            gtk_container_add(GTK_CONTAINER(window), sub->getWidget());
+            gtk_widget_show_all(window);            
+
+            // GtkWidget *toplevel = gtk_widget_get_toplevel(getWidget());
+            // if (GTK_IS_WINDOW(toplevel))
+            // {
+            //     gtk_container_add(GTK_CONTAINER(toplevel), sub->getWidget());
+            // }
+            // else
+            // {
+            //     MSG(("YMenu::activateSubMenu 2, get top level window failed"));
+            // }
+
             fPopup = sub;
             submenuItem = item;
         }
@@ -460,6 +503,102 @@ void YMenu::handleButton(const XButtonEvent &button) {
         activateSubMenu(nocascade ? selectedItem : -1, true);
 
         if (button.type == ButtonRelease)
+        {
+            bool noAction = true;
+            if (selectedItem != -1) {
+                noAction =
+                getItem(selectedItem)->getAction() == actionNull &&
+                getItem(selectedItem)->getSubmenu() == 0;
+            }
+
+            if (selectedItem == -1 || noAction) {
+                if (menuMouseTracking)
+                    focusItem(-1);
+                else
+                    focusItem(findActiveItem(itemCount() - 1, 1));
+            } else {
+                if ((getItem(selectedItem)->getAction() != actionNull ||
+                     getItem(selectedItem)->getSubmenu() != 0)
+                    &&
+                    (getItem(selectedItem)->getAction() == actionNull ||
+                     getItem(selectedItem)->getSubmenu() == 0 || !nocascade)
+                   )
+                {
+
+                    activateItem(button.state, true);
+                    return;
+                }
+            }
+        }
+    }
+    YPopupWindow::handleButton(button);
+}
+
+
+void YMenu::handleButton(const GdkEventButton &button) {
+    MSG(("YMenu::handleButton, %d %d %f %f %f %f",button.button,button.type,button.x,button.y,button.x_root,button.y_root));    
+    if (button.button == Button5) {    //hyjiang
+        if (button.type == GDK_BUTTON_PRESS && itemCount() > 0) {
+            if (inrange((int)button.x_root, x(), x() + int(width()) - 1)) {
+                const int itemHeight = height() / itemCount();
+                const int stepSize = max(menuFont->height(), itemHeight);
+                hideSubmenu();
+                setPosition(x(), clamp(y() - (int)(button.state & ShiftMask ?
+                                                   3 * stepSize : stepSize),
+                                       (int)button.y_root - (int)height() + 1,
+                                       (int)button.y_root));
+                if (menuMouseTracking)
+                    trackMotion(clamp((int)button.x_root, x() + 2, x() + (int)width() - 3),
+                                (int)button.y_root, button.state, true);
+                focusItem(findItem(button.x_root - x(),
+                                   button.y_root - y()));
+            }
+        }
+    } else if (button.button == Button4) {
+        if (button.type == GDK_BUTTON_PRESS && itemCount() > 0) {
+            if (inrange((int)button.x_root, x(), x() + int(width()) - 1)) {
+                const int itemHeight = height() / itemCount();
+                const int stepSize = max(menuFont->height(), itemHeight);
+                hideSubmenu();
+                setPosition(x(), clamp(y() + (int)(button.state & ShiftMask ?
+                                                   3 * stepSize : stepSize),
+                                       (int)button.y_root - (int)height() + 1,
+                                       (int)button.y_root));
+                if (menuMouseTracking)
+                    trackMotion(clamp((int)button.x_root, x() + 2, x() + (int)width() - 3),
+                                (int)button.y_root, button.state, true);
+                focusItem(findItem(button.x_root - x(),
+                                   button.y_root - y()));
+            }
+        }
+    } else if (button.button) {
+        int const selItem = findItem(button.x_root - x(),
+                                     button.y_root - y());
+        trackMotion(button.x_root, button.y_root, button.state, false);
+        bool const nocascade(!onCascadeButton(selItem,
+                                              button.x_root - x(),
+                                              button.y_root - y(), true) ||
+                             (button.state & ControlMask));
+
+        MSG(("YMenu::handleButton 2, %d %d",selItem, nocascade));    
+
+        if (button.type == GDK_BUTTON_PRESS) {
+            fPopupActive = fPopup;
+        } 
+        else if (button.type == GDK_BUTTON_RELEASE) {
+            if (fPopupActive == fPopup && fPopup != 0 && nocascade) {
+                hideSubmenu();
+                focusItem(selItem);
+                paintItems();
+                return;
+            }
+        }
+        focusItem(selItem);
+        activatedX = button.x_root;
+        activatedY = button.y_root;
+        activateSubMenu(nocascade ? selectedItem : -1, true);
+
+        if (button.type == GDK_BUTTON_RELEASE)
         {
             bool noAction = true;
             if (selectedItem != -1) {

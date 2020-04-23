@@ -2262,7 +2262,6 @@ void StartMenuView(IApp *app)
     // menu->updatePopup(); 
     // menu->show();
     // menu->activatePopup(0);
-
     menu->k_popup(0,0,0,
                 0, 0, 0, 0,
                 0,

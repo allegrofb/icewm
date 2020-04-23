@@ -54,6 +54,7 @@ public:
 
     virtual bool handleKey(const XKeyEvent &key);
     virtual void handleButton(const XButtonEvent &button);
+    virtual void handleButton(const GdkEventButton &button);
     virtual void handleMotion(const XMotionEvent &motion);
     virtual void handleMotionOutside(bool top, const XMotionEvent &motion);
     void dispatchMotionOutside(bool top, const XMotionEvent &motion);

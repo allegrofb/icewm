@@ -982,6 +982,60 @@ bool YWindow::handleKey(const XKeyEvent &key) {
     return false;
 }
 
+
+void YWindow::handleButton(const GdkEventButton &button) {
+    if (fToolTip) {
+        fToolTip->leave();
+    }
+
+    // int const dx(abs(button.x_root - fClickEvent.x_root));
+    // int const dy(abs(button.y_root - fClickEvent.y_root));
+    // int const motionDelta(max(dx, dy));
+
+    // if (button.type == ButtonPress) {
+    //     fClickDrag = 0;
+
+    //     if (fClickWindow != this) {
+    //         fClickWindow = this;
+    //         fClickCount = 1;
+    //     } else {
+    //         if ((button.time - fClickTime < unsigned(MultiClickTime)) &&
+    //             fClickButton == button.button &&
+    //             motionDelta <= ClickMotionDistance &&
+    //             button.x >= 0 && button.y >= 0 &&
+    //             button.x < int(width()) && button.y < int(height()))
+    //         {
+    //             fClickCount++;
+    //             handleClickDown(button, fClickCount);
+    //         } else
+    //             fClickCount = 1;
+    //     }
+    //     fClickEvent = button;
+    //     fClickButton = fClickButtonDown = button.button;
+    //     fClickTime = button.time;
+    // } else if (button.type == ButtonRelease) {
+    //     if ((fClickWindow == this) &&
+    //         !fClickDrag &&
+    //         fClickCount > 0 &&
+    //         fClickButtonDown == button.button &&
+    //         motionDelta <= ClickMotionDistance &&
+    //         button.x >= 0 && button.y >= 0 &&
+    //         button.x < int(width()) && button.y < int(height()))
+    //     {
+    //         fClickButtonDown = 0;
+    //         handleClick(button, fClickCount);
+    //     } else {
+    //         fClickWindow = 0;
+    //         fClickCount = 1;
+    //         fClickButtonDown = 0;
+    //         fClickButton = 0;
+    //         if (fClickDrag)
+    //             handleEndDrag(fClickEvent, button);
+    //     }
+    // }
+}
+
+
 void YWindow::handleButton(const XButtonEvent &button) {
     if (fToolTip) {
         fToolTip->leave();

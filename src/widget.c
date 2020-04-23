@@ -122,7 +122,7 @@ static void my_cpu_realize(GtkWidget *widget) {
    attrs.height      = alloc.height;
    attrs.window_type = GDK_WINDOW_CHILD;
    attrs.wclass      = GDK_INPUT_OUTPUT;
-   attrs.event_mask  = gtk_widget_get_events(widget) | GDK_EXPOSURE_MASK;
+   attrs.event_mask  = gtk_widget_get_events(widget) | GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK;
 
    attrs_mask = GDK_WA_X | GDK_WA_Y;
 

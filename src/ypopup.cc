@@ -339,6 +339,40 @@ bool YPopupWindow::handleKey(const XKeyEvent &/*key*/) {
     return true;
 }
 
+
+void YPopupWindow::handleButton(const GdkEventButton &button) {
+    if ((button.x_root >= x() &&
+         button.y_root >= y() &&
+         button.x_root  < x() + int(width()) &&
+         button.y_root  < y() + int(height()) &&
+         button.window == gtk_widget_get_window(getWidget())) /*|
+         button.button == Button4 ||
+         button.button == Button5*/)
+        YWindow::handleButton(button);
+    else {
+        if (fForWindow) 
+        {
+            // XEvent xev;
+            // xev.xbutton = button;
+            // xapp->handleGrabEvent(fForWindow, xev);
+        } 
+        else 
+        {
+            if (replayMenuCancelClick) 
+            {
+                // xapp->replayEvent();
+                popdown();
+            } else 
+            {
+                if (button.type == GDK_BUTTON_RELEASE) 
+                {
+                    popdown();
+                }
+            }
+        }
+    }
+}
+
 void YPopupWindow::handleButton(const XButtonEvent &button) {
     if ((button.x_root >= x() &&
          button.y_root >= y() &&

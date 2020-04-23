@@ -94,6 +94,7 @@ public:
     virtual void handleConfigure(const XConfigureEvent &configure);
     virtual bool handleKey(const XKeyEvent &key);
     virtual void handleButton(const XButtonEvent &button);
+    virtual void handleButton(const GdkEventButton &button);
     virtual void handleMotion(const XMotionEvent &motion);
     virtual void handleCrossing(const XCrossingEvent &crossing);
     virtual void handleProperty(const XPropertyEvent &) {}

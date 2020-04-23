@@ -22,6 +22,7 @@ public:
 
     virtual bool handleKey(const XKeyEvent &key);
     virtual void handleButton(const XButtonEvent &button);
+    virtual void handleButton(const GdkEventButton &button);
     virtual void handleMotion(const XMotionEvent &motion);
     virtual void handleMotionOutside(bool top, const XMotionEvent &motion);
     virtual bool handleAutoScroll(const XMotionEvent &mouse);
@@ -68,6 +69,7 @@ public:
 
 private:
     static gboolean draw_cb(GtkWidget *widget, cairo_t *cr, void *data);
+    static gboolean button_cb(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
 
 private:
     YObjectArray<YMenuItem> fItems;
