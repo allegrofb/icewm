@@ -1373,13 +1373,13 @@ void YProperty::discard() {
 const YProperty& YProperty::update() {
     discard();
     int fmt = 0;
-    if (XGetWindowProperty(xapp->display(), fWind, fProp, 0L, fLimit, fDelete,
-                           fKind, &fType, &fmt, &fSize, &fMore, &fData) ==
-        Success && fData && fSize && fmt == fBits && (fKind == fType || !fKind))
-    {
-    } else {
-        discard();
-    }
+    // if (XGetWindowProperty(xapp->display(), fWind, fProp, 0L, fLimit, fDelete,    //hyjiang
+    //                        fKind, &fType, &fmt, &fSize, &fMore, &fData) ==
+    //     Success && fData && fSize && fmt == fBits && (fKind == fType || !fKind))
+    // {
+    // } else {
+    //     discard();
+    // }
     return *this;
 }
 

@@ -151,6 +151,24 @@ YWindow::YWindow(YWindow *parent, Window win, int depth,
 }
 
 
+YWindow::YWindow(YWindow *parent, int widget):
+    fParentWindow(parent),
+    fFocusedWindow(0),
+    fWidget(0), flags(0), fStyle(0), fX(0), fY(0), fWidth(1), fHeight(1),
+    fPointer(), unmapCount(0),
+    fGraphics(0),
+    fEventMask(KeyPressMask|KeyReleaseMask|FocusChangeMask|
+               LeaveWindowMask|EnterWindowMask),
+    fWinGravity(NorthWestGravity), fBitGravity(ForgetGravity),
+    fEnabled(true), fToplevel(false),
+    fDoubleBuffer(doubleBuffer),
+    accel(0),
+    fKPixmap(0),
+    fDND(false), XdndDragSource(None), XdndDropTarget(None)
+{
+    createWidget(widget);
+}
+
 YWindow::YWindow(int widget):
     fParentWindow(0),
     fFocusedWindow(0),
@@ -222,7 +240,7 @@ Colormap YWindow::colormap() {
 }
 
 void YWindow::setWindowFocus() {
-    XSetInputFocus(xapp->display(), handle(), RevertToNone, CurrentTime);
+    // XSetInputFocus(xapp->display(), handle(), RevertToNone, CurrentTime);   //hyjiang
 }
 
 void YWindow::setTitle(char const * title) {
@@ -283,8 +301,8 @@ void YWindow::setStyle(unsigned aStyle) {
 void YWindow::addEventMask(long mask) {
     if (hasbits(fEventMask, mask) == false) {
         fEventMask |= mask;
-        if (flags & wfCreated)
-            XSelectInput(xapp->display(), fHandle, fEventMask);
+        // if (flags & wfCreated)
+        //     XSelectInput(xapp->display(), fHandle, fEventMask);    //hyjiang todo
     }
 }
 
@@ -558,7 +576,7 @@ void YWindow::destroy() {
                 // XSelectInput(xapp->display(), fHandle, NoEventMask);
             }
         }
-        windowContext.remove(fHandle);
+        // windowContext.remove(fHandle);      //hyjiang
         fHandle = None;
         flags &= unsigned(~wfCreated);
     }
@@ -673,7 +691,7 @@ void YWindow::setBitGravity(int gravity) {
 }
 
 void YWindow::raise() {
-    XRaiseWindow(xapp->display(), handle());
+    // XRaiseWindow(xapp->display(), handle());   //hyjiang, todo
 }
 
 void YWindow::lower() {
@@ -1240,10 +1258,11 @@ void YWindow::setGeometry(const YRect &r) {
         fHeight = r.height();
 
         if (flags & wfCreated) {
-            if (!nullGeometry())
-                XMoveResizeWindow(xapp->display(),
-                                  fHandle,
-                                  fX, fY, fWidth, fHeight);
+            // if (!nullGeometry())
+                // XMoveResizeWindow(xapp->display(),         //hyjiang
+                //                   fHandle,
+                //                   fX, fY, fWidth, fHeight);
+
         }
 
         configure(YRect2(r, old));
@@ -1257,8 +1276,8 @@ void YWindow::setPosition(int x, int y) {
         fX = x;
         fY = y;
 
-        if (flags & wfCreated)
-            XMoveWindow(xapp->display(), fHandle, fX, fY);
+        // if (flags & wfCreated)
+        //     XMoveWindow(xapp->display(), fHandle, fX, fY);  //hyjiang todo
 
         configure(YRect2(geometry(), old));
     }
@@ -1882,12 +1901,13 @@ bool YWindow::hasPopup() {
 }
 
 YDesktop::YDesktop(YWindow *aParent, Window win):
-    YWindow(aParent, win)
+    // YWindow(aParent, win)   //hyjiang
+    YWindow(aParent, 1)
 {
     desktop = this;
     setDoubleBuffer(false);
     unsigned w = 0, h = 0;
-    updateXineramaInfo(w, h);
+    // updateXineramaInfo(w, h);    //hyjiang
 }
 
 YDesktop::~YDesktop() {
@@ -2133,7 +2153,8 @@ void YWindow::clearWindow() {
 }
 
 void YWindow::clearArea(int x, int y, unsigned w, unsigned h, bool exposures) {
-    XClearArea(xapp->display(), handle(), x, y, w, h, exposures);
+    MSG(("YWindow::clearArea ****** failed, %d %d %d %d %d",x,y,w,h,exposures));  //hyjiang
+    // XClearArea(xapp->display(), handle(), x, y, w, h, exposures);
 }
 
 Pixmap YWindow::createPixmap() {

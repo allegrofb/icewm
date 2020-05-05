@@ -70,7 +70,10 @@ YMenu::YMenu(YWindow *parent):
     fMenusel(null)
 {
     if (menuFont == null)
+    {
         menuFont = YFont::getFont(XFA(menuFontName));
+        menuFont->setWidget(getWidget());
+    }
 
     paintedItem = selectedItem = -1;
     submenuItem = -1;
@@ -94,8 +97,8 @@ YMenu::YMenu(YWindow *parent):
 gboolean YMenu::draw_cb(GtkWidget *widget, cairo_t *cr, void *data)
 {
     MSG(("YMenu::draw_cb"));    
-    YMenu* app = (YMenu*)data;
-    cairo_set_source_surface (cr, app->fKPixmap, 0, 0);
+    YMenu* menu = (YMenu*)data;
+    cairo_set_source_surface (cr, menu->fKPixmap, 0, 0);
     cairo_paint (cr);
     return TRUE;
 }
@@ -103,8 +106,8 @@ gboolean YMenu::draw_cb(GtkWidget *widget, cairo_t *cr, void *data)
 gboolean YMenu::button_cb(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
     MSG(("YMenu::button_cb"));    
-    YMenu* app = (YMenu*)user_data;
-    app->handleButton(*event);
+    YMenu* menu = (YMenu*)user_data;
+    menu->handleButton(*event);
 
     return TRUE;
 }

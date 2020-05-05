@@ -2250,14 +2250,10 @@ void StartMenuView(IApp *app)
     g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
     debug = 1;
-    
-    // clock = rootMenu->getWidget();
-    // rootMenu->setSize(200,200);
-    // rootMenu->updatePopup();
 
     StartMenu* menu = new StartMenu(app, NULL, NULL, "menu");
     clock = menu->getWidget();
-    menu->setSize(200,500);
+    menu->setSize(500,500);
     MSG(("111111"));
     // menu->updatePopup(); 
     // menu->show();
@@ -2273,95 +2269,109 @@ void StartMenuView(IApp *app)
     gtk_widget_show_all(window);
 }
 
-
+/*
 int main(int argc, char *argv[]) {
 
-    YLocale locale;
-    bool restart_wm(false);
-    bool notify_parent(false);
-    const char *configFile(0);
-    const char *displayName(0);
-    const char *overrideTheme(0);
+//     YLocale locale;
+//     bool restart_wm(false);
+//     bool notify_parent(false);
+//     const char *configFile(0);
+//     const char *displayName(0);
+//     const char *overrideTheme(0);
 
-    for (char **arg = argv + 1; arg < argv + argc; ++arg)
-    {
-        if (**arg == '-')
-        {
-            char *value(0);
-            if (GetArgument(value, "c", "config", arg, argv + argc))
-                configFile = value;
-            else if (GetArgument(value, "t", "theme", arg, argv + argc))
-                overrideTheme = value;
-            else if (is_switch(*arg, "p", "postpreferences"))
-                post_preferences = true;
-            else if (is_long_switch(*arg, "extensions"))
-                show_extensions = true;
-            else
-#ifdef DEBUG
-                if (is_long_switch(*arg, "debug"))
-                debug = true;
-            else if (is_long_switch(*arg, "debug-z"))
-                debug_z = true;
-            else
-#endif
-                if (is_switch(*arg, "r", "restart"))
-                restart_wm = true;
-            else if (is_long_switch(*arg, "replace"))
-                replace_wm = true;
-            else if (is_long_switch(*arg, "notify"))
-                notify_parent = true;
-            else if (is_long_switch(*arg, "configured"))
-                print_configured(argv[0]);
-            else if (is_long_switch(*arg, "directories"))
-                print_directories(argv[0]);
-            else if (is_switch(*arg, "l", "list-themes"))
-                print_themes_list();
-            else if (is_help_switch(*arg))
-                print_usage(my_basename(argv[0]));
-            else if (is_version_switch(*arg))
-                print_version_exit(VERSION);
-            else if (is_copying_switch(*arg))
-                print_copying_exit();
-            else if (is_long_switch(*arg, "sync"))
-                YXApplication::synchronizeX11 = true;
-            else if (is_long_switch(*arg, "logevents"))
-                loggingEvents = true;
-            else if (is_switch(*arg, "a", "alpha"))
-                YXApplication::alphaBlending = true;
-            else if (GetArgument(value, "d", "display", arg, argv + argc))
-                displayName = value;
-            else if (GetArgument(value, "s", "splash", arg, argv + argc))
-                splashFile = value;
-            else if (GetLongArgument(value, "trace", arg, argv + argc))
-                YTrace::tracing(value);
-            else
-                warn(_("Unrecognized option '%s'."), *arg);
-        }
-    }
+//     for (char **arg = argv + 1; arg < argv + argc; ++arg)
+//     {
+//         if (**arg == '-')
+//         {
+//             char *value(0);
+//             if (GetArgument(value, "c", "config", arg, argv + argc))
+//                 configFile = value;
+//             else if (GetArgument(value, "t", "theme", arg, argv + argc))
+//                 overrideTheme = value;
+//             else if (is_switch(*arg, "p", "postpreferences"))
+//                 post_preferences = true;
+//             else if (is_long_switch(*arg, "extensions"))
+//                 show_extensions = true;
+//             else
+// #ifdef DEBUG
+//                 if (is_long_switch(*arg, "debug"))
+//                 debug = true;
+//             else if (is_long_switch(*arg, "debug-z"))
+//                 debug_z = true;
+//             else
+// #endif
+//                 if (is_switch(*arg, "r", "restart"))
+//                 restart_wm = true;
+//             else if (is_long_switch(*arg, "replace"))
+//                 replace_wm = true;
+//             else if (is_long_switch(*arg, "notify"))
+//                 notify_parent = true;
+//             else if (is_long_switch(*arg, "configured"))
+//                 print_configured(argv[0]);
+//             else if (is_long_switch(*arg, "directories"))
+//                 print_directories(argv[0]);
+//             else if (is_switch(*arg, "l", "list-themes"))
+//                 print_themes_list();
+//             else if (is_help_switch(*arg))
+//                 print_usage(my_basename(argv[0]));
+//             else if (is_version_switch(*arg))
+//                 print_version_exit(VERSION);
+//             else if (is_copying_switch(*arg))
+//                 print_copying_exit();
+//             else if (is_long_switch(*arg, "sync"))
+//                 YXApplication::synchronizeX11 = true;
+//             else if (is_long_switch(*arg, "logevents"))
+//                 loggingEvents = true;
+//             else if (is_switch(*arg, "a", "alpha"))
+//                 YXApplication::alphaBlending = true;
+//             else if (GetArgument(value, "d", "display", arg, argv + argc))
+//                 displayName = value;
+//             else if (GetArgument(value, "s", "splash", arg, argv + argc))
+//                 splashFile = value;
+//             else if (GetLongArgument(value, "trace", arg, argv + argc))
+//                 YTrace::tracing(value);
+//             else
+//                 warn(_("Unrecognized option '%s'."), *arg);
+//         }
+//     }
 
-    if (restart_wm)
-        return restartWM(displayName, overrideTheme);
+//     if (restart_wm)
+//         return restartWM(displayName, overrideTheme);
 
-    if (isEmpty(configFile))
-        configFile = "preferences";
-    loadStartup(configFile);
+//     if (isEmpty(configFile))
+//         configFile = "preferences";
+//     loadStartup(configFile);
 
-    if (nonempty(overrideTheme))
-        themeName = overrideTheme;
-    if (loggingEvents)
-        initLogEvents();
+//     if (nonempty(overrideTheme))
+//         themeName = overrideTheme;
+//     if (loggingEvents)
+//         initLogEvents();
 
-    YXApplication app(&argc, &argv, displayName);
+    // YXApplication app(&argc, &argv, displayName);
 
-    // YWMApp app(&argc, &argv, displayName,
-    //             notify_parent, splashFile,
-    //             configFile, overrideTheme);
+    // // YWMApp app(&argc, &argv, displayName,
+    // //             notify_parent, splashFile,
+    // //             configFile, overrideTheme);
 
+    // manager = new YWindowManager(
+    //     NULL, NULL, NULL, nullptr, 0);
+    // manager->initWorkspaces();
+
+
+    // loadStartup("preferences");    //????????
+
+
+    gtk_init(&argc, &argv);
+    debug = 1;
+
+    YApplication app(&argc, &argv);
     manager = new YWindowManager(
         NULL, NULL, NULL, nullptr, 0);
     manager->initWorkspaces();
 
-    gtk_init(&argc, &argv);
+
+
+    // gtk_init(&argc, &argv);
 
     WPixRes::initPixmaps();
 
@@ -2377,6 +2387,29 @@ int main(int argc, char *argv[]) {
 
     return 0;
 }
+
+*/
+
+
+
+int main(int argc, char *argv[]) {
+
+    gtk_init(&argc, &argv);
+    debug = 1;
+
+    YApplication app(&argc, &argv);
+    manager = new YWindowManager(
+        NULL, NULL, NULL, nullptr, 0);
+    manager->initWorkspaces();
+
+    WPixRes::initPixmaps();
+
+    StartMenuView(&app);
+    gtk_main();
+
+    return 0;
+}
+
 
 
 

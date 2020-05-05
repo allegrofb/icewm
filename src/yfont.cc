@@ -11,6 +11,7 @@
 extern ref<YFont> getXftFont(ustring name, bool antialias);
 extern ref<YFont> getXftFontXlfd(ustring name, bool antialias);
 extern ref<YFont> getCoreFont(const char*);
+extern ref<YFont> getPGFont(ustring name, bool antialias);
 
 ref<YFont> YFont::getFont(ustring name, ustring xftFont, bool antialias) {
     ref<YFont> ret;
@@ -26,10 +27,13 @@ ref<YFont> YFont::getFont(ustring name, ustring xftFont, bool antialias) {
         ret = getCoreFont(cstring(name));
 
 #elif defined(CONFIG_XFREETYPE)
+    // if (xftFont.nonempty())
+    //     ret = getXftFont(xftFont, antialias);
+    // if (ret == null)
+    //     ret = getXftFontXlfd(name, antialias);
+
     if (xftFont.nonempty())
-        ret = getXftFont(xftFont, antialias);
-    if (ret == null)
-        ret = getXftFontXlfd(name, antialias);
+        ret = getPGFont(xftFont, antialias);
 
 #elif defined(CONFIG_COREFONTS)
     ret = getCoreFont(cstring(name));

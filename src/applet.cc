@@ -81,7 +81,7 @@ void IApplet::showPixmap() {
     Graphics g(getKPixmap(width(), height()), width(), height(), depth());
     // Graphics g(fPixmap, width(), height(), depth());
     paint(g, YRect(0, 0, width(), height()));
-    gtk_widget_queue_draw (getWidget());     //hyjiang
+    gtk_widget_queue_draw (getWidget()); 
     // setBackgroundPixmap(fPixmap);
     // clearWindow();
 }

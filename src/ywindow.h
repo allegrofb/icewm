@@ -9,6 +9,7 @@
 
 #include <gtk/gtk.h>
 #include <cairo.h>
+#include "widget.h"
 
 class YPopupWindow;
 class YToolTip;
@@ -265,6 +266,7 @@ public:
 
 public :
     YWindow(int widget);
+    YWindow(YWindow *parent, int widget);
     GtkWidget *getWidget() { return fWidget; }
 
     cairo_surface_t* fKPixmap;

@@ -93,7 +93,8 @@ YWindowManager::YWindowManager(
     }
 #endif
 
-    fTopWin = new YWindow();
+    // fTopWin = new YWindow();  //hyjiang
+    fTopWin = new YWindow(1);
     fTopWin->setStyle(wsOverrideRedirect | wsInputOnly);
     fTopWin->setGeometry(YRect(-1, -1, 1, 1));
     fTopWin->setTitle("IceTopWin");
@@ -2285,11 +2286,11 @@ void YWindowManager::announceWorkArea() {
         area[ws * 4 + 3] = r.height();
     }
 
-    XChangeProperty(xapp->display(), handle(),
-                    _XA_NET_WORKAREA,
-                    XA_CARDINAL,
-                    32, PropModeReplace,
-                    (unsigned char *)area, nw * 4);
+    // XChangeProperty(xapp->display(), handle(),      //hyjiang, todo
+    //                 _XA_NET_WORKAREA,
+    //                 XA_CARDINAL,
+    //                 32, PropModeReplace,
+    //                 (unsigned char *)area, nw * 4);
     delete [] area;
 
     if (fActiveWorkspace != -1 && fActiveWorkspace < workspaceCount()) {
@@ -2300,11 +2301,11 @@ void YWindowManager::announceWorkArea() {
         area[2] = fWorkArea[cw][0].fMaxX;
         area[3] = fWorkArea[cw][0].fMaxY;
 
-        XChangeProperty(xapp->display(), handle(),
-                        _XA_WIN_WORKAREA,
-                        XA_CARDINAL,
-                        32, PropModeReplace,
-                        (unsigned char *)area, 4);
+        // XChangeProperty(xapp->display(), handle(),    //hyjiang, todo
+        //                 _XA_WIN_WORKAREA,
+        //                 XA_CARDINAL,
+        //                 32, PropModeReplace,
+        //                 (unsigned char *)area, 4);
     }
 }
 
@@ -2361,16 +2362,16 @@ void YWindowManager::activateWorkspace(long workspace) {
 
         long ws = fActiveWorkspace;
 
-        XChangeProperty(xapp->display(), handle(),
-                        _XA_WIN_WORKSPACE,
-                        XA_CARDINAL,
-                        32, PropModeReplace,
-                        (unsigned char *)&ws, 1);
-        XChangeProperty(xapp->display(), handle(),
-                        _XA_NET_CURRENT_DESKTOP,
-                        XA_CARDINAL,
-                        32, PropModeReplace,
-                        (unsigned char *)&ws, 1);
+        // XChangeProperty(xapp->display(), handle(),    //hyjiang
+        //                 _XA_WIN_WORKSPACE,
+        //                 XA_CARDINAL,
+        //                 32, PropModeReplace,
+        //                 (unsigned char *)&ws, 1);
+        // XChangeProperty(xapp->display(), handle(),
+        //                 _XA_NET_CURRENT_DESKTOP,
+        //                 XA_CARDINAL,
+        //                 32, PropModeReplace,
+        //                 (unsigned char *)&ws, 1);
         ws = 0;
 
 #if 1 // not needed when we drop support for GNOME hints
@@ -2393,8 +2394,8 @@ void YWindowManager::activateWorkspace(long workspace) {
             }
         unlockFocus();
 
-        YFrameWindow *toFocus = getLastFocus(true, workspace);
-        setFocus(toFocus);
+        // YFrameWindow *toFocus = getLastFocus(true, workspace);   //hyjiang, todo
+        // setFocus(toFocus);
         resetColormap(true);
 
         if (taskBar) taskBar->relayoutNow();
@@ -2500,17 +2501,21 @@ void YWindowManager::setDesktopGeometry() {
     data[0] = desktop->width();
     data[1] = desktop->height();
     MSG(("setting: _NET_DESKTOP_GEOMETRY = (%ld,%ld)", data[0], data[1]));
-    // XChangeProperty(xapp->display(), handle(),
+
+    my_widget_property_set_guint(getWidget(),"PROP_XA_NET_DESKTOP_GEOMETRY_WIDTH",data[0]);
+    my_widget_property_set_guint(getWidget(),"PROP_XA_NET_DESKTOP_GEOMETRY_HEIGHT",data[1]);
+    
+    // XChangeProperty(xapp->display(), handle(),                     //hyjiang
     //                 _XA_NET_DESKTOP_GEOMETRY, XA_CARDINAL, 32,
     //                 PropModeReplace, (unsigned char *)&data, 2);
 }
 
 void YWindowManager::setShowingDesktop() {
     long value = fShowingDesktop;
-    MSG(("setting: _NET_SHOWING_DESKTOP = %ld", value));
-    XChangeProperty(xapp->display(), handle(),
-                    _XA_NET_SHOWING_DESKTOP, XA_CARDINAL, 32,
-                    PropModeReplace, (unsigned char *)&value, 1);
+    MSG(("setting: _NET_SHOWING_DESKTOP = %ld  **** todo", value));
+    // XChangeProperty(xapp->display(), handle(),                   //hyjiang
+    //                 _XA_NET_SHOWING_DESKTOP, XA_CARDINAL, 32,
+    //                 PropModeReplace, (unsigned char *)&value, 1);
 }
 
 void YWindowManager::setShowingDesktop(bool setting) {
@@ -2630,23 +2635,23 @@ bool YWindowManager::compareDesktopNames(const YStringList& list) {
 bool YWindowManager::readNetDesktopNames(YStringList& list) {
     bool success = false;
 
-    MSG(("reading: _NET_DESKTOP_NAMES(%d)",(int)_XA_NET_DESKTOP_NAMES));
+    MSG(("reading: _NET_DESKTOP_NAMES(%d) ******* todo",(int)_XA_NET_DESKTOP_NAMES));
 
-    XTextProperty names;
-    if (XGetTextProperty(xapp->display(), handle(), &names,
-                         _XA_NET_DESKTOP_NAMES) && names.nitems > 0) {
-        if (XmbTextPropertyToTextList(xapp->display(), &names,
-                                      &list.strings, &list.count) == Success) {
-            if (list.count > 0 && isEmpty(list.last()))
-                list.count--;
-            success = true;
-        } else {
-            MSG(("warning: could not convert strings for _NET_DESKTOP_NAMES"));
-        }
-        XFree(names.value);
-    } else {
-        MSG(("warning: could not read _NET_DESKTOP_NAMES"));
-    }
+    // XTextProperty names;
+    // if (XGetTextProperty(xapp->display(), handle(), &names,
+    //                      _XA_NET_DESKTOP_NAMES) && names.nitems > 0) {
+    //     if (XmbTextPropertyToTextList(xapp->display(), &names,
+    //                                   &list.strings, &list.count) == Success) {
+    //         if (list.count > 0 && isEmpty(list.last()))
+    //             list.count--;
+    //         success = true;
+    //     } else {
+    //         MSG(("warning: could not convert strings for _NET_DESKTOP_NAMES"));
+    //     }
+    //     XFree(names.value);
+    // } else {
+    //     MSG(("warning: could not read _NET_DESKTOP_NAMES"));
+    // }
 
     return success;
 }
@@ -2654,28 +2659,28 @@ bool YWindowManager::readNetDesktopNames(YStringList& list) {
 bool YWindowManager::readWinDesktopNames(YStringList& list) {
     bool success = false;
 
-    MSG(("reading: _WIN_WORKSPACE_NAMES(%d)",(int)_XA_WIN_WORKSPACE_NAMES));
+    MSG(("reading: _WIN_WORKSPACE_NAMES(%d) ******** todo",(int)_XA_WIN_WORKSPACE_NAMES));
 
-    XTextProperty names;
-    if (XGetTextProperty(xapp->display(), handle(), &names,
-                         _XA_WIN_WORKSPACE_NAMES) && names.nitems > 0) {
-        if (XmbTextPropertyToTextList(xapp->display(), &names,
-                                      &list.strings, &list.count) == Success) {
-            if (list.count > 0 && isEmpty(list.last()))
-                list.count--;
-            success = true;
-        } else {
-            MSG(("warning: could not convert strings for _WIN_WORKSPACE_NAMES"));
-        }
-        XFree(names.value);
-    } else {
-        MSG(("warning: could not read _WIN_WORKSPACE_NAMES"));
-    }
+    // XTextProperty names;
+    // if (XGetTextProperty(xapp->display(), handle(), &names,
+    //                      _XA_WIN_WORKSPACE_NAMES) && names.nitems > 0) {
+    //     if (XmbTextPropertyToTextList(xapp->display(), &names,
+    //                                   &list.strings, &list.count) == Success) {
+    //         if (list.count > 0 && isEmpty(list.last()))
+    //             list.count--;
+    //         success = true;
+    //     } else {
+    //         MSG(("warning: could not convert strings for _WIN_WORKSPACE_NAMES"));
+    //     }
+    //     XFree(names.value);
+    // } else {
+    //     MSG(("warning: could not read _WIN_WORKSPACE_NAMES"));
+    // }
     return success;
 }
 
 void YWindowManager::setWinDesktopNames(long count) {
-    MSG(("setting: _WIN_WORKSPACE_NAMES"));
+    MSG(("setting: _WIN_WORKSPACE_NAMES ***** todo"));
     static char terminator[] = { '\0' };
     asmart<char *> strings(new char *[count + 1]);
     for (long i = 0; i < count; i++) {
@@ -2684,17 +2689,17 @@ void YWindowManager::setWinDesktopNames(long count) {
                    : const_cast<char *>(workspaces.spare(i));
     }
     strings[count] = terminator;
-    XTextProperty names;
-    if (XmbTextListToTextProperty(xapp->display(), strings, count + 1,
-                                  XStdICCTextStyle, &names) == Success) {
-        XSetTextProperty(xapp->display(), handle(), &names,
-                         _XA_WIN_WORKSPACE_NAMES);
-        XFree(names.value);
-    }
+    // XTextProperty names;
+    // if (XmbTextListToTextProperty(xapp->display(), strings, count + 1,
+    //                               XStdICCTextStyle, &names) == Success) {
+    //     XSetTextProperty(xapp->display(), handle(), &names,
+    //                      _XA_WIN_WORKSPACE_NAMES);
+    //     XFree(names.value);
+    // }
 }
 
 void YWindowManager::setNetDesktopNames(long count) {
-    MSG(("setting: _NET_DESKTOP_NAMES"));
+    MSG(("setting: _NET_DESKTOP_NAMES  ****** todo"));
     static char terminator[] = { '\0' };
     asmart<char *> strings(new char *[count + 1]);
     for (long i = 0; i < count; i++) {
@@ -2703,13 +2708,13 @@ void YWindowManager::setNetDesktopNames(long count) {
                    : const_cast<char *>(workspaces.spare(i));
     }
     strings[count] = terminator;
-    XTextProperty names;
-    if (XmbTextListToTextProperty(xapp->display(), strings, count + 1,
-                                  XUTF8StringStyle, &names) == Success) {
-        XSetTextProperty(xapp->display(), handle(), &names,
-                         _XA_NET_DESKTOP_NAMES);
-        XFree(names.value);
-    }
+    // XTextProperty names;
+    // if (XmbTextListToTextProperty(xapp->display(), strings, count + 1,
+    //                               XUTF8StringStyle, &names) == Success) {
+    //     XSetTextProperty(xapp->display(), handle(), &names,
+    //                      _XA_NET_DESKTOP_NAMES);
+    //     XFree(names.value);
+    // }
 }
 
 void YWindowManager::setDesktopNames(long count) {
@@ -2735,14 +2740,14 @@ void YWindowManager::setDesktopCount() {
 }
 
 void YWindowManager::setDesktopViewport() {
-    MSG(("setting: _NET_DESKTOP_VIEWPORT"));
+    MSG(("setting: _NET_DESKTOP_VIEWPORT ***** todo"));
     int n = 2 * workspaceCount();
     long *data = new long[n];
     for (int i = 0; i < n; i++)
         data[i] = 0;
-    XChangeProperty(xapp->display(), handle(),
-                    _XA_NET_DESKTOP_VIEWPORT, XA_CARDINAL,
-                    32, PropModeReplace, (unsigned char *)data, n);
+    // XChangeProperty(xapp->display(), handle(),
+    //                 _XA_NET_DESKTOP_VIEWPORT, XA_CARDINAL,
+    //                 32, PropModeReplace, (unsigned char *)data, n);
     delete[] data;
 }
 

@@ -163,86 +163,156 @@ YPixel::~YPixel() {
 #endif
 }
 
+#include <iostream>
+#include <string>
+#include <regex>
+#include <sstream>
+
 void YColor::alloc(const char* name, int opacity) {
-    if (name && name[0]) {
-        if (*name == '[') {
-            long opaq(strtol(++name, (char **) &name, 10));
-            if (inrange<long>(opaq, MinOpacity, MaxOpacity)) {
-                opacity = int(opaq);
-            }
-            name += (*name == ']');
-        }
-        cache.setOpacity(opacity);
-        alloc(name);
-        cache.setOpacity(0);
+    MSG(("YColor::alloc ---, %s %d",name, opacity));
+
+    const char* cstr = name;
+    std::regex e ("rgb:([0-9a-fA-F]{2})/([0-9a-fA-F]{2})/([0-9a-fA-F]{2})");
+    std::cmatch cm; // same as std::match_results<const char*> cm;
+    std::regex_match(cstr, cm, e);
+    // std::cout << "string literal with " << cm.size() << " matches\n";
+    // std::cout << "the matches were: ";
+    // for (unsigned i = 0; i < cm.size(); ++i)
+    // {
+    //     std::cout << "[" << cm[i] << "] ";
+    // }
+    // std::cout << std::endl;
+    std::ostringstream sb;
+    sb << "#" << cm[1] << cm[2] << cm[3];
+    GdkRGBA color;
+    if(gdk_rgba_parse(&color,sb.str().c_str()))
+    {
+        // fPixel = cache.get(color.red*255, color.green*255, color.blue*255);
+        int r = color.red*255;
+        int g = color.green*255;
+        int b = color.blue*255;
+        _fPixel = 0;
+        _fPixel |= r <<16;
+        _fPixel |= g <<8;
+        _fPixel |= b;
+        return;
     }
+
+    MSG(("YColor::alloc -- failed"));
+
+
+    // if (name && name[0]) {
+    //     if (*name == '[') {
+    //         long opaq(strtol(++name, (char **) &name, 10));
+    //         if (inrange<long>(opaq, MinOpacity, MaxOpacity)) {
+    //             opacity = int(opaq);
+    //         }
+    //         name += (*name == ']');
+    //     }
+    //     cache.setOpacity(opacity);
+    //     alloc(name);
+    //     cache.setOpacity(0);
+    // }
 }
 
 void YColor::alloc(const char* name) {
-    if (name && 0 == strncmp(name, "rgba:", 5)) {
-        unsigned short color[4] = { 0, 0, 0, 0 };
-        bool valid = false;
-        int k = 0, n = 12;
-        for (const char* str = name + 5; -4 <= n; ++str, n -= 4) {
-            const char c = *str;
-            const int hex = ASCII::hexDigit(c);
-            if (0 <= hex) {
-                if (0 <= n) {
-                    color[k] |= hex << n;
-                }
-            }
-            else {
-                while (0 <= n && n <= 8) {
-                    color[k] |= (color[k] >> (12 - n));
-                    n = max(-4, n - (12 - n));
-                }
-                if (c != '/' || n != -4 || ++k == 4) {
-                    valid = (c == 0 && k == 3 && n == -4);
-                    break;
-                }
-                n = 16;
-            }
-        }
-        if (valid) {
-            int previous = cache.getOpacity();
-            if (previous == 0) {
-                cache.setOpacity(MaxOpacity * color[3] / 0xFFFF);
-            }
-            fPixel = cache.get(color[0], color[1], color[2]);
-            cache.setOpacity(previous);
-            return;
-        }
-        else if (testOnce(name, __LINE__)) {
-            msg(_("Could not parse color \"%s\""), name);
-        }
+    MSG(("YColor::alloc, %s",name));
+
+    const char* cstr = name;
+    std::regex e ("rgb:([0-9a-fA-F]{2})/([0-9a-fA-F]{2})/([0-9a-fA-F]{2})");
+    std::cmatch cm; // same as std::match_results<const char*> cm;
+    std::regex_match(cstr, cm, e);
+    // std::cout << "string literal with " << cm.size() << " matches\n";
+    // std::cout << "the matches were: ";
+    // for (unsigned i = 0; i < cm.size(); ++i)
+    // {
+    //     std::cout << "[" << cm[i] << "] ";
+    // }
+    // std::cout << std::endl;
+    std::ostringstream sb;
+    sb << "#" << cm[1] << cm[2] << cm[3];
+    GdkRGBA color;
+    if(gdk_rgba_parse(&color,sb.str().c_str()))
+    {
+        // fPixel = cache.get(color.red*255, color.green*255, color.blue*255);
+        int r = color.red*255;
+        int g = color.green*255;
+        int b = color.blue*255;
+        _fPixel = 0;
+        _fPixel |= r <<16;
+        _fPixel |= g <<8;
+        _fPixel |= b;
+        return;
     }
-    else if (nonempty(name)) {
-        XColor color;
-        if (XParseColor(display(), colormap(), name, &color)) {
-            fPixel = cache.get(color.red, color.green, color.blue);
-            return;
-        }
 
-        if (testOnce(name, __LINE__))
-            msg(_("Could not parse color \"%s\""), name);
 
-        if (strncmp(name, "rgb:rgb:", 8) == 0)
-            return alloc(name + 4);
+    MSG(("YColor::alloc failed"));
 
-        mstring str(name);
-        if (str.match("^[0-9a-f]{6}$", "i") != null)
-            return alloc(cstring("#" + str));
-        if (str.match("^#[0-9a-f]{5}$", "i") != null)
-            return alloc(cstring(str + &name[5]));
 
-        mstring rgb(str.match("rgb:[0-9a-f]{2}/[0-9a-f]{2}/[0-9a-f]{2}", "i"));
-        if (rgb != null)
-            return alloc(cstring(rgb));
-        rgb = str.match("[0-9a-f]{2}/[0-9a-f]{2}/[0-9a-f]{2}", "i");
-        if (rgb != null)
-            return alloc(cstring("rgb:" + rgb));
-    }
-    fPixel = cache.black();
+    // if (name && 0 == strncmp(name, "rgba:", 5)) {
+    //     unsigned short color[4] = { 0, 0, 0, 0 };
+    //     bool valid = false;
+    //     int k = 0, n = 12;
+    //     for (const char* str = name + 5; -4 <= n; ++str, n -= 4) {
+    //         const char c = *str;
+    //         const int hex = ASCII::hexDigit(c);
+    //         if (0 <= hex) {
+    //             if (0 <= n) {
+    //                 color[k] |= hex << n;
+    //             }
+    //         }
+    //         else {
+    //             while (0 <= n && n <= 8) {
+    //                 color[k] |= (color[k] >> (12 - n));
+    //                 n = max(-4, n - (12 - n));
+    //             }
+    //             if (c != '/' || n != -4 || ++k == 4) {
+    //                 valid = (c == 0 && k == 3 && n == -4);
+    //                 break;
+    //             }
+    //             n = 16;
+    //         }
+    //     }
+    //     if (valid) {
+    //         int previous = cache.getOpacity();
+    //         if (previous == 0) {
+    //             cache.setOpacity(MaxOpacity * color[3] / 0xFFFF);
+    //         }
+    //         fPixel = cache.get(color[0], color[1], color[2]);
+    //         cache.setOpacity(previous);
+    //         return;
+    //     }
+    //     else if (testOnce(name, __LINE__)) {
+    //         msg(_("Could not parse color \"%s\""), name);
+    //     }
+    // }
+    // else if (nonempty(name)) {
+    //     // XColor color;
+    //     // if (XParseColor(display(), colormap(), name, &color)) {        //hyjiang
+    //     //     fPixel = cache.get(color.red, color.green, color.blue);
+    //     //     return;
+    //     // }
+
+    //     if (testOnce(name, __LINE__))
+    //         msg(_("Could not parse color \"%s\""), name);
+
+    //     if (strncmp(name, "rgb:rgb:", 8) == 0)
+    //         return alloc(name + 4);
+
+    //     mstring str(name);
+    //     if (str.match("^[0-9a-f]{6}$", "i") != null)
+    //         return alloc(cstring("#" + str));
+    //     if (str.match("^#[0-9a-f]{5}$", "i") != null)
+    //         return alloc(cstring(str + &name[5]));
+
+    //     mstring rgb(str.match("rgb:[0-9a-f]{2}/[0-9a-f]{2}/[0-9a-f]{2}", "i"));
+    //     if (rgb != null)
+    //         return alloc(cstring(rgb));
+    //     rgb = str.match("[0-9a-f]{2}/[0-9a-f]{2}/[0-9a-f]{2}", "i");
+    //     if (rgb != null)
+    //         return alloc(cstring("rgb:" + rgb));
+    // }
+    // fPixel = cache.black();
 }
 
 #ifdef CONFIG_XFREETYPE
@@ -351,37 +421,53 @@ inline unsigned short bright(unsigned short color) {
 }
 
 YColor YPixel::darker() {
-    if (fDarken == false)
-        fDarken = YColor( cache.get(darken(red()),
-                                    darken(green()),
-                                    darken(blue()),
-                                    alpha()));
+    MSG(("YPixel::darker *************"));
+
+    // if (fDarken == false)
+    //     fDarken = YColor( cache.get(darken(red()),
+    //                                 darken(green()),
+    //                                 darken(blue()),
+    //                                 alpha()));
     return fDarken;
 }
 
 YColor YPixel::brighter() {
-    if (fBright == false)
-        fBright = YColor( cache.get(bright(red()),
-                                    bright(green()),
-                                    bright(blue()),
-                                    alpha()));
+    MSG(("YPixel::brighter *************"));
+    // if (fBright == false)     //hyjiang
+    //     fBright = YColor( cache.get(bright(red()),
+    //                                 bright(green()),
+    //                                 bright(blue()),
+    //                                 alpha()));
     return fBright;
 }
 
+// YColor::YColor(YColorName& name)
+// {
+//     alloc(name.name(),0);
+// }
+
 unsigned long YColor::pixel() {
-    return fPixel->pixel();
+    // return fPixel->pixel();
+    return _fPixel;
 }
 
 YColor YColor::darker() {
-    return fPixel->darker();
+    // return fPixel->darker();     //hyjiang
+    YColor color;
+    color.set(_fPixel);
+    return color;
 }
 
 YColor YColor::brighter() {
-    return fPixel->brighter();
+    // return fPixel->brighter();   //hyjiang
+    YColor color;
+    color.set(_fPixel);
+    return color;
 }
 
 bool YColor::operator==(YColor& c) {
-    return fPixel && c.fPixel && fPixel->pixel() == c.fPixel->pixel();
+    // return fPixel && c.fPixel && fPixel->pixel() == c.fPixel->pixel();
+    return _fPixel == c._fPixel;
 }
 
 bool YColor::operator!=(YColor& c) {

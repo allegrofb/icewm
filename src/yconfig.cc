@@ -279,6 +279,8 @@ void YConfig::parseConfiguration(cfoption *options, char *data) {
 }
 
 bool YConfig::loadConfigFile(cfoption *options, upath fileName) {
+    MSG(("YConfig::loadConfigFile 1, %s",fileName.string().c_str()));
+
     YTraceConfig trace(fileName.string());
     char* buf = fileName.loadText();
     if (buf) {

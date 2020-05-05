@@ -36,6 +36,12 @@ struct _MyWidgetClass {
 GType      my_widget_get_type(void) G_GNUC_CONST;
 GtkWidget *my_widget_new(void);
 
+
+guint my_widget_get_desktop_width(MyWidget *w);
+void  my_widget_set_desktop_width(MyWidget *w, guint width);
+
+void my_widget_property_set_guint(GtkWidget *w, const char* property, guint value);
+
 G_END_DECLS
 
 #endif /* __WIDGET_H__ */

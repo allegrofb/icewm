@@ -222,6 +222,7 @@ ref<YImage> YImage::createFromPixmapAndMaskScaled(Pixmap pix, Pixmap mask,
 }
 
 ref<YPixmap> YImageGDK::renderToPixmap(unsigned depth, bool premult) {  //hyjiang, depth = 24, premult = false
+    MSG(("YImageGDK::renderToPixmap *******, depth = %d",depth));
 
     cairo_surface_t *surface = gdk_cairo_surface_create_from_pixbuf (this->fPixbuf, 0, NULL);
 

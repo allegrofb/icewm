@@ -149,6 +149,8 @@ ref<YPixmap> YPixmap::subimage(unsigned x, unsigned y, unsigned w, unsigned h) {
 }
 
 ref<YPixmap> YPixmap::create(unsigned w, unsigned h, unsigned depth, bool useMask) {
+    MSG(("YPixmap::create *******, depth = %d",depth));
+
     ref<YPixmap> n;
 
     Pixmap pixmap = createPixmap(w, h, depth);
@@ -160,6 +162,7 @@ ref<YPixmap> YPixmap::create(unsigned w, unsigned h, unsigned depth, bool useMas
 }
 
 ref<YPixmap> YPixmap::createFromImage(ref<YImage> image, unsigned depth) {
+    MSG(("YPixmap::createFromImage *******, depth = %d",depth));
     return image->renderToPixmap(depth);
 }
 
@@ -190,11 +193,12 @@ ref<YPixmap> YPixmap::createFromPixmapAndMaskScaled(Pixmap pix, Pixmap mask,
 }
 
 ref<YPixmap> YPixmap::load(upath filename) {
-    TLOG(("YPixmap::load %s", filename.string().c_str()));  //hyjiang
+    MSG(("YPixmap::load %s", filename.string().c_str()));  //hyjiang
     ref<YImage> image = YImage::load(filename);
     ref<YPixmap> pixmap;
     if (image != null) {
-        pixmap = YPixmap::createFromImage(image, xapp->depth());
+        // pixmap = YPixmap::createFromImage(image, xapp->depth());
+        pixmap = YPixmap::createFromImage(image, 24);  //hyjiang
     }
     return pixmap;
 }

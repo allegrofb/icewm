@@ -6,10 +6,10 @@ class YColorName;
 
 class YColor {
 public:
-    YColor() : fPixel(0) { }
-    explicit YColor(const char* s) : fPixel(0) { if (s) alloc(s, 0); }
-    YColor(const YColor& c) : fPixel(c.fPixel) { }
-    YColor& operator=(const YColor& c) { fPixel = c.fPixel; return *this; }
+    YColor() : fPixel(0),_fPixel(0) { }
+    explicit YColor(const char* s) : fPixel(0),_fPixel(0) { if (s) alloc(s, 0); }
+    YColor(const YColor& c) : _fPixel(c._fPixel) { }
+    YColor& operator=(const YColor& c) { _fPixel = c._fPixel; return *this; }
 
     void alloc(const char* name, int opacity);
     unsigned long pixel();
@@ -19,10 +19,11 @@ public:
 
     bool operator==(YColor& c);
     bool operator!=(YColor& c);
-    operator bool() { return fPixel; }
-    operator bool() const { return fPixel; }
-    void release() { fPixel = 0; }
-
+    operator bool() { return _fPixel; }
+    operator bool() const { return _fPixel; }
+    void release() { _fPixel = 0; }
+    void set(unsigned long pixel) {_fPixel = pixel;}
+    
 #ifdef CONFIG_XFREETYPE
     struct _XftColor* xftColor();
 #endif
@@ -31,10 +32,12 @@ public:
     static YColorName white;
 
 private:
-    YColor(YPixel* pixel) : fPixel(pixel) { }
+    // YColor(YPixel* pixel) : fPixel(pixel) { }
+    // explicit YColor(unsigned long pixel) : _fPixel(pixel) { }
     void alloc(const char* name);
 
     YPixel* fPixel;
+    unsigned long _fPixel;
 
     friend class YColorName;
     friend class YPixel;
